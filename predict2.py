@@ -36,6 +36,12 @@ def audio_callback(indata, frames, time_info, status):
 def normalize_audio(audio):
     return audio / max(0.01, np.max(np.abs(audio)))
 
+def flagging(text):
+    keywords = ["fuck", "shit", "damn"]
+    for word in keywords:
+        if word in text.lower():
+            print ("Bad words detected")
+
 print("Press Ctrl+C to stop")
 
 with sd.InputStream(
