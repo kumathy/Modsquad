@@ -1,7 +1,6 @@
 """
-This script is to run the real time audio transcription feature, still realtively slow
-but its a start
-Will also add more in this
+This script is for testing purposes, it is using a simple version and is not fully optimized
+It transcripts to a text file
 """
 import sounddevice as sd
 import numpy as np
