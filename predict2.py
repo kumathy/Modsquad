@@ -8,6 +8,7 @@ import numpy as np
 import queue
 import time
 from faster_whisper import WhisperModel
+import re
 
 
 SAMPLE_RATE = 16000
@@ -15,7 +16,9 @@ CHANNELS = 1
 BLOCK_DURATION = 0.3   # seconds per audio chunk
 BUFFER_DURATION = 2.0  # rolling buffer size
 DEVICE = None          # default mic
-MODEL_SIZE = "small"   # Increased model size for accuracy sake, small is good enough so far
+MODEL_SIZE = "small"   # tiny / base / small / medium
+BANNED= {"fuck", "shit", "damn"}
+MAX_LEN= max(len(w) for w in BANNED)
 
 
 
@@ -24,8 +27,8 @@ rolling_buffer = np.zeros(int(SAMPLE_RATE * BUFFER_DURATION), dtype=np.float32)
 
 model = WhisperModel(
     MODEL_SIZE,
-    device="auto",          
-    compute_type="int8"
+    device="auto",      # for gpu change this to "cuda"    
+    compute_type="int8" # for gpu change this to float16
 )
 
 def audio_callback(indata, frames, time_info, status):
@@ -36,14 +39,27 @@ def audio_callback(indata, frames, time_info, status):
 def normalize_audio(audio):
     return audio / max(0.01, np.max(np.abs(audio)))
 
-def flagging(text):
-    keywords = ["fuck", "shit", "damn"]
-    token= text.lower().split()
-    if any (t in token for t in keywords):
-        print("Bad Langauge detected!")
+
+class ProfanityFilter:
+    def __init__(self, banned):
+        self.banned = banned
+        self.buffer = ""
+
+    def process(self, text):
+        text = text.lower()
+        combined = self.buffer + text
+
+        censored = combined
+        for w in self.banned:
+            censored = re.sub(w, "*" * len(w), censored)
+
+        # keep only the tail to catch cross-chunk swears
+        self.buffer = combined[-MAX_LEN:]
+
+        return censored[len(self.buffer):]
 
 print("Press Ctrl+C to stop")
-
+filter= ProfanityFilter(BANNED)
 with sd.InputStream(
     samplerate=SAMPLE_RATE,
     channels=CHANNELS,
@@ -69,15 +85,9 @@ with sd.InputStream(
                 vad_filter=True,
                 beam_size=1
             )
-
-            text = " ".join(seg.text.strip() for seg in segments)
-            flagging(text)
-
-
-            if text and text != last_transcript:
-                print("\r📝", text, end="", flush=True) #comment this line out if you only want to see when bad words are detected
-                last_transcript = text
-
+            for seg in segments:
+                clean = filter.process(seg.text)
+                print("\r📝", clean, end="", flush=True)
             time.sleep(0.3)
 
     except KeyboardInterrupt:
