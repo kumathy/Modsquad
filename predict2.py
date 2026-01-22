@@ -15,7 +15,7 @@ CHANNELS = 1
 BLOCK_DURATION = 0.3   # seconds per audio chunk
 BUFFER_DURATION = 2.0  # rolling buffer size
 DEVICE = None          # default mic
-MODEL_SIZE = "small"   # tiny / base / small / medium
+MODEL_SIZE = "small"   # Increased model size for accuracy sake, small is good enough so far
 
 
 
@@ -75,7 +75,7 @@ with sd.InputStream(
 
 
             if text and text != last_transcript:
-                print("\r📝", text, end="", flush=True)
+                print("\r📝", text, end="", flush=True) #comment this line out if you only want to see when bad words are detected
                 last_transcript = text
 
             time.sleep(0.3)
