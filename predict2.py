@@ -12,10 +12,10 @@ from faster_whisper import WhisperModel
 
 SAMPLE_RATE = 16000
 CHANNELS = 1
-BLOCK_DURATION = 0.5   # seconds per audio chunk
+BLOCK_DURATION = 0.3   # seconds per audio chunk
 BUFFER_DURATION = 2.0  # rolling buffer size
 DEVICE = None          # default mic
-MODEL_SIZE = "tiny"   # tiny / base / small / medium
+MODEL_SIZE = "small"   # tiny / base / small / medium
 
 
 
@@ -24,7 +24,7 @@ rolling_buffer = np.zeros(int(SAMPLE_RATE * BUFFER_DURATION), dtype=np.float32)
 
 model = WhisperModel(
     MODEL_SIZE,
-    device="cpu",          
+    device="auto",          
     compute_type="int8"
 )
 
@@ -38,9 +38,9 @@ def normalize_audio(audio):
 
 def flagging(text):
     keywords = ["fuck", "shit", "damn"]
-    for word in keywords:
-        if word in text.lower():
-            print ("Bad words detected")
+    token= text.lower().split()
+    if any (t in token for t in keywords):
+        print("Bad Langauge detected!")
 
 print("Press Ctrl+C to stop")
 
@@ -71,6 +71,7 @@ with sd.InputStream(
             )
 
             text = " ".join(seg.text.strip() for seg in segments)
+            flagging(text)
 
 
             if text and text != last_transcript:
