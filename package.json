@@ -1,0 +1,24 @@
+{
+  "name": "modsquad",
+  "version": "1.0.0",
+  "description": "Real-time censorship tool for video games",
+  "homepage": "https://github.com/kumathy/ModSquad#readme",
+  "bugs": {
+    "url": "https://github.com/kumathy/ModSquad/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumathy/ModSquad.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "electron": "^40.1.0"
+  }
+}
