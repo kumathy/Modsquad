@@ -34,3 +34,55 @@
 ```bash
    npm run start
 ```
+
+## Internal Development Guide
+
+### Tech Stack
+
+- **React** - UI framework
+- **Vite** - Build tool and dev server
+- **Electron** - Desktop app wrapper
+- **shadcn/ui** - Component library
+- **Tailwind CSS** - CSS framework
+
+### Project Structure
+
+```
+ModSquad/
+├── src/
+│   ├── App.jsx                  # Main app component
+│   ├── components               # ← Create custom components here
+│   │   └── ui/                  # ← shadcn components go here (don't modify)
+│   ├── index.css
+│   ├── index.jsx                # React entry point
+│   └── lib/
+│       └── utils.js             # Utility functions
+├── index.html                   # HTML entry point
+├── main.cjs                     # Electron main process
+├── package.json
+├── tailwind.config.js
+├── vite.config.js
+└── components.json
+```
+
+### Installing Shadcn Components
+
+Run this command from the **project root**:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+Example:
+
+```bash
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add tabs
+```
+
+This will automatically put the components in `src/components/ui/`
+
+### Documentation
+
+[React](https://react.dev) • [shadcn/ui](https://ui.shadcn.com/docs) • [Tailwind CSS](https://tailwindcss.com/docs)
