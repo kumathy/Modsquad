@@ -19,7 +19,24 @@ export default function App() {
         </div>
       </header>
 
-      <main></main>
+      <main className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="vod" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsTrigger value="vod" className="gap-2">
+              <Film className="w-4 h-4" />
+              VOD
+            </TabsTrigger>
+            <TabsTrigger value="real-time" className="gap-2">
+              <Radio className="w-4 h-4" />
+              Real-time
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Settings2 className="w-4 h-4" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </main>
     </div>
   );
 }
