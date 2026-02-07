@@ -69,6 +69,14 @@ export default function App() {
           </div>
         </Tabs>
       </main>
+
+      <footer className="border-t mt-16">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-sm text-muted-foreground">
+            <p>© 2026 Modsquad. AI-powered stream moderation.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
