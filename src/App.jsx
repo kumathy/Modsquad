@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+
+import VideoProcessor from "@/components/VideoProcessor";
+
 import { Film, Radio, Settings2 } from "lucide-react";
 
 export default function App() {
@@ -38,7 +41,7 @@ export default function App() {
 
           <div className="mt-8">
             <TabsContent value="vod">
-              <div>
+              <div className="mb-6">
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   VOD Processing
                 </h2>
@@ -47,6 +50,7 @@ export default function App() {
                   version with AI-cloned voice replacement.
                 </p>
               </div>
+              <VideoProcessor />
             </TabsContent>
 
             <TabsContent value="real-time">
