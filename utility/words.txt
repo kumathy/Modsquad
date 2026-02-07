@@ -1,0 +1,8 @@
+fox
+dog
+lazy
+cat
+cats
+python
+coding
+test

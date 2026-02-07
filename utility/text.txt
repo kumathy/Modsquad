@@ -1,0 +1,5 @@
+The quick brown fox jumps over the lazy dog.
+This is a simple test document with some repeated words.
+Python is great for coding, and coding is fun.
+Sometimes cats chase dogs, but dogs usally chase cats too.
+Lazy foxes are rare, but lazy dogs are not.
