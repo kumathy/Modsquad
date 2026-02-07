@@ -7,7 +7,7 @@ import { Film, Radio, Settings2 } from "lucide-react";
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <header className="border-b">
         <div className="container mx-auto px-4 py-6">
           <h1 className="scroll-m-20 text-3xl font-bold tracking-tight text-balance">
@@ -70,7 +70,7 @@ export default function App() {
         </Tabs>
       </main>
 
-      <footer className="border-t mt-16">
+      <footer className="border-t mt-auto">
         <div className="container mx-auto px-4 py-6">
           <div className="text-sm text-muted-foreground">
             <p>© 2026 Modsquad. AI-powered stream moderation.</p>
