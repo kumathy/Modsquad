@@ -35,6 +35,38 @@ export default function App() {
               Settings
             </TabsTrigger>
           </TabsList>
+
+          <div className="mt-8">
+            <TabsContent value="vod">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight mb-2">
+                  VOD Processing
+                </h2>
+                <p className="text-muted-foreground">
+                  Upload your videos/recorded streams to receive a censored
+                  version with AI-cloned voice replacement.
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="real-time">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight mb-2">
+                  Real-time Stream Monitoring
+                </h2>
+                <p className="text-muted-foreground">Coming soon!</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight mb-2">
+                  Settings
+                </h2>
+                <p className="text-muted-foreground">Coming soon!</p>
+              </div>
+            </TabsContent>
+          </div>
         </Tabs>
       </main>
     </div>
