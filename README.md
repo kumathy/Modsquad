@@ -20,6 +20,7 @@
 2. **Install dependencies**
 
 ```bash
+   cd frontend
    npm install
 ```
 
@@ -49,23 +50,30 @@
 
 ```
 ModSquad/
-├── src/
-│   ├── App.jsx                  # Main app component
-│   ├── components               # ← Create custom components here
-│   │   └── ui/                  # ← shadcn components go here (don't modify)
-│   ├── index.css
-│   ├── index.jsx                # React entry point
-│   └── lib/
-│       └── utils.js             # Utility functions
-├── index.html                   # HTML entry point
-├── main.cjs                     # Electron main process
-├── package.json
-├── tailwind.config.js
-├── vite.config.js
-└── components.json
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                  # Main app component
+│   │   ├── components/              # ← Create custom components here
+│   │   │   └── ui/                  # ← shadcn components go here (don't modify)
+│   │   ├── index.css
+│   │   ├── index.jsx                # React entry point
+│   │   └── lib/
+│   │       └── utils.js             # Utility functions
+│   ├── index.html                   # HTML entry point
+│   ├── main.cjs                     # Electron main process
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── vite.config.js
+│   └── components.json
+├── backend/
+│   ├── utils/                       # Backend utility functions
+│   ├── main.py                      # FastAPI entry point
+│   └── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-### Installing Shadcn Components
+### Installing `shadcn/ui` Components
 
 Run this command from the **project root**:
 
@@ -85,4 +93,4 @@ This will automatically put the components in `src/components/ui/`
 
 ### Documentation
 
-[React](https://react.dev) • [shadcn/ui](https://ui.shadcn.com/docs) • [Tailwind CSS](https://tailwindcss.com/docs)
+[React](https://react.dev) • [shadcn/ui](https://ui.shadcn.com/docs) • [Tailwind CSS](https://tailwindcss.com/docs) • [FastAPI](https://fastapi.tiangolo.com/)
