@@ -51,11 +51,6 @@ export default function App() {
                 </p>
               </div>
               <VideoProcessor />
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight">
-                  Processed Videos
-                </h3>
-              </div>
             </TabsContent>
 
             <TabsContent value="real-time">
