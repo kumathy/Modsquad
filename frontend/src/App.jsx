@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-import VideoProcessor from "@/components/VideoProcessor";
+import VideoProcessor from "@/components/video/VideoProcessor";
 
 import { Film, Radio, Settings2 } from "lucide-react";
 
@@ -40,8 +40,8 @@ export default function App() {
           </TabsList>
 
           <div className="mt-8">
-            <TabsContent value="vod">
-              <div className="mb-6">
+            <TabsContent value="vod" className="space-y-6">
+              <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   VOD Processing
                 </h2>
@@ -51,6 +51,11 @@ export default function App() {
                 </p>
               </div>
               <VideoProcessor />
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight">
+                  Processed Videos
+                </h3>
+              </div>
             </TabsContent>
 
             <TabsContent value="real-time">

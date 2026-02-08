@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 
 import { Upload } from "lucide-react";
 
-export default function VideoProcessor() {
+export default function VideoUploadCard() {
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle>Upload Video</CardTitle>
           <CardDescription>
