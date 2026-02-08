@@ -74,7 +74,7 @@ In a **separate terminal**, start Electron:
    npm run start
 ```
 
-4. **Backend Setup**
+3. **Backend Setup**
 
 In yet another **separate terminal**:
 
