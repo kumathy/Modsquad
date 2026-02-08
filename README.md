@@ -4,42 +4,6 @@
     VOD + Real-time language control tool for streaming
 </p>
 
-## Tech Stack
-
-- **React** - UI framework
-- **Vite** - Build tool and dev server
-- **Electron** - Desktop app wrapper
-- **shadcn/ui** - Component library
-- **Tailwind CSS** - CSS framework
-- **FastAPI** - Backend API
-
-## Project Structure
-
-```
-ModSquad/
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                  # Main app component
-│   │   ├── components/              # ← Create custom components here
-│   │   │   └── ui/                  # ← shadcn components go here (don't modify)
-│   │   ├── index.css
-│   │   ├── index.jsx                # React entry point
-│   │   └── lib/
-│   │       └── utils.js             # Utility functions
-│   ├── index.html                   # HTML entry point
-│   ├── main.cjs                     # Electron main process
-│   ├── package.json
-│   ├── tailwind.config.js
-│   ├── vite.config.js
-│   └── components.json
-├── backend/
-│   ├── utils/                       # Backend utility functions
-│   ├── main.py                      # FastAPI entry point
-│   └── requirements.txt
-├── README.md
-└── .gitignore
-```
-
 ## Running Locally
 
 ### Prerequisites
@@ -96,6 +60,38 @@ In yet another **separate terminal**:
 ```
 
 ## Internal Development Guide
+
+### Tech Stack
+
+- **React** - UI framework
+- **Vite** - Build tool and dev server
+- **Electron** - Desktop app wrapper
+- **shadcn/ui** - Component library
+- **Tailwind CSS** - CSS framework
+- **FastAPI** - Backend API
+
+### Project Structure
+
+```
+ModSquad/
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                    # Main app component
+│   │   ├── components/
+│   │   │   ├── video/                 # Video processing components
+│   │   │   │   ├── VideoProcessor.jsx
+│   │   │   │   ├── VideoUploadCard.jsx
+│   │   │   │   └── ProcessedVideoCard.jsx
+│   │   │   └── ui/                    # shadcn components
+│   │   ├── index.jsx                  # React entry point
+│   │   └── lib/
+│   ├── index.html                     # HTML entry point
+│   └── main.cjs                       # Electron main process
+├── backend/
+│   ├── utils/                         # Backend utility functions
+│   ├── main.py                        # FastAPI entry point
+│   └── requirements.txt               # Python dependencies
+```
 
 ### Installing `shadcn/ui` Components
 
