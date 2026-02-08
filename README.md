@@ -4,47 +4,14 @@
     VOD + Real-time language control tool for streaming
 </p>
 
-## Running Locally
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm
-
-1. **Clone the repository**
-
-```bash
-   git clone https://github.com/kumathy/ModSquad.git && cd ModSquad
-```
-
-2. **Install dependencies**
-
-```bash
-   cd frontend
-   npm install
-```
-
-3. **Start development server**
-
-```bash
-   npm run dev
-```
-
-4. **In another terminal, start the Electron app**
-
-```bash
-   npm run start
-```
-
-## Internal Development Guide
-
-### Tech Stack
+## Tech Stack
 
 - **React** - UI framework
 - **Vite** - Build tool and dev server
 - **Electron** - Desktop app wrapper
 - **shadcn/ui** - Component library
 - **Tailwind CSS** - CSS framework
+- **FastAPI** - Backend API
 
 ### Project Structure
 
@@ -72,6 +39,63 @@ ModSquad/
 ├── README.md
 └── .gitignore
 ```
+
+## Running Locally
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- Python (v3.8 or higher)
+- npm
+- pip
+
+1. **Clone the repository**
+
+```bash
+   git clone https://github.com/kumathy/ModSquad.git && cd ModSquad
+```
+
+2. **Frontend Setup**
+
+```bash
+   # Navigate to frontend
+   cd frontend
+
+   # Install dependencies
+   npm install
+
+   # Start development server
+   npm run dev
+```
+
+In a **separate terminal**, start Electron:
+
+```bash
+   npm run start
+```
+
+4. **Backend Setup**
+
+In yet another **separate terminal**:
+
+```bash
+   # Navigate to backend
+   cd backend
+
+   # Create virtual environment
+   python3 -m venv venv
+
+   # Activate virtual environment
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+   # Install dependencies
+   pip install -r requirements.txt
+
+   # Start FastAPI server
+   uvicorn main:app --reload
+```
+
+## Internal Development Guide
 
 ### Installing `shadcn/ui` Components
 
