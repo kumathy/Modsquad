@@ -13,7 +13,7 @@
 - **Tailwind CSS** - CSS framework
 - **FastAPI** - Backend API
 
-### Project Structure
+## Project Structure
 
 ```
 ModSquad/
