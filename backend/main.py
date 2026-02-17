@@ -7,7 +7,7 @@ from pathlib import Path
 app = FastAPI()
 
 origins = [
-    "https://localhost:5173",
+    "http://localhost:5173",
     "localhost:5173"
 ]
 
