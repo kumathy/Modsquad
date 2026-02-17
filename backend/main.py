@@ -64,6 +64,13 @@ async def process_video(
         transcript_result = transcribe_audio(str(file_path))
         logger.info(f"Transcription complete: {len(transcript_result["segments"])} segments")
 
+        # Log full transcript (for demo purposes, will remove later)
+        logger.info("=" * 80)
+        logger.info("FULL TRANSCRIPT:")
+        logger.info("=" * 80)
+        logger.info(transcript_result["text"])
+        logger.info("=" * 80)
+
         # Return results
         return JSONResponse({
             "success": True,
