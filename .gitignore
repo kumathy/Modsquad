@@ -11,11 +11,13 @@ node_modules
 dist
 dist-ssr
 *.local
-venv
 
 __pycache__/
 *.pyc
 venv/
+
+# Uploaded videos go to this folder
+uploads/
 
 # Editor directories and files
 .vscode/

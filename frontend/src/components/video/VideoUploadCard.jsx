@@ -8,42 +8,54 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-import { Upload, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 
 const API_URL = "http://localhost:8000";
 
-export default function VideoUploadCard({ onUploadComplete }) {
+export default function VideoUploadCard({
+  onUploadStart,
+  onUploadComplete,
+  onUploadProgress,
+  onUploadError,
+}) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   function handleFileChange(event) {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setError(null);
     }
   }
 
   async function handleUpload() {
     if (!file) {
-      setError("Please select a file first");
       return;
     }
 
     setLoading(true);
-    setError(null);
+
+    const videoId = onUploadStart(file);
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
+      // Simulate progress
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        if (currentProgress < 90) {
+          currentProgress = Math.min(currentProgress + 10, 90);
+          onUploadProgress(currentProgress, videoId);
+        }
+      }, 1000);
+
       const response = await fetch(`${API_URL}/process-video`, {
         method: "POST",
         body: formData,
       });
+
+      clearInterval(progressInterval);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -53,17 +65,17 @@ export default function VideoUploadCard({ onUploadComplete }) {
       const data = await response.json();
       console.log("Processing complete:", data);
 
-      // Call parent callback with result
-      if (onUploadComplete) {
-        onUploadComplete(data);
-      }
+      // Update to completed
+      onUploadComplete(data, videoId);
 
       // Reset form
       setFile(null);
       document.getElementById("video-upload").value = "";
     } catch (err) {
-      setError(err.message);
       console.error("Error:", err);
+
+      // Mark as failed in the video card
+      onUploadError(err.message, videoId);
     } finally {
       setLoading(false);
     }
@@ -108,59 +120,37 @@ export default function VideoUploadCard({ onUploadComplete }) {
 
           {/* Show selected file */}
           {file && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium">{file.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {(file.size / (1024 * 1024)).toFixed(2)} MB
-              </p>
-            </div>
-          )}
-
-          {/* Upload Button */}
-          <Button
-            onClick={handleUpload}
-            disabled={!file || loading}
-            className="w-full"
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Process Video
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center py-8 space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <div className="text-center">
-                <p className="text-lg font-medium">Processing video...</p>
-                <p className="text-sm text-muted-foreground">
-                  Transcribing and detecting profanity, this may take a minute.
+            <>
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(file.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
+              {/* Upload Button */}
+              <Button
+                onClick={handleUpload}
+                disabled={loading}
+                className="w-full"
+                size="lg"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Process Video
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
