@@ -1,17 +1,9 @@
-import { useState } from "react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
-import {
-  Upload,
-  Play,
-  Download,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Play, Download, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function ProcessedVideoCard({ video }) {
   return (
@@ -45,7 +37,7 @@ export default function ProcessedVideoCard({ video }) {
                 <Progress value={video.progress} />
                 <p className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Processing video and applying language control...</span>
-                  <span className="font-medium"> {video.progress}%</span>
+                  <span className="font-medium">{video.progress}%</span>
                 </p>
               </div>
             )}
@@ -54,7 +46,7 @@ export default function ProcessedVideoCard({ video }) {
               <div className="flex gap-6 text-sm">
                 <div>
                   <span className="text-muted-foreground">
-                    Profanities detecteds:{" "}
+                    Profanities detected:{" "}
                   </span>
                   <span className="font-medium">
                     {video.profanitiesDetected}
@@ -83,7 +75,7 @@ export default function ProcessedVideoCard({ video }) {
                 Preview
               </Button>
               <Button size="sm">
-                <Play className="w-4 h-4 mr-2" />
+                <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
             </div>

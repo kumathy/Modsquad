@@ -30,18 +30,68 @@ export default function VideoProcessor() {
       progress: 0,
     },
   ]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+
+  function handleUploadStart(file) {
+    const processingVideo = {
+      name: file.name,
+      status: "processing",
+      profanitiesDetected: 0,
+      wordsReplaced: 0,
+      uploadedAt: new Date(),
+      progress: 0,
+      id: Date.now(),
+    };
+
+    setProcessedVideos([processingVideo, ...processedVideos]);
+    return processingVideo.id;
+  }
+
+  function handleUploadComplete(result, videoId) {
+    setProcessedVideos((prevVideos) =>
+      prevVideos.map((video) =>
+        video.id === videoId
+          ? {
+              ...video,
+              status: "completed",
+              profanitiesDetected: result.profanity?.total_flagged || 0,
+              wordsReplaced: result.profanity?.total_flagged || 0,
+              progress: 100,
+              fullResult: result,
+            }
+          : video
+      )
+    );
+  }
+
+  function handleUploadProgress(progress, videoId) {
+    setProcessedVideos((prevVideos) =>
+      prevVideos.map((video) =>
+        video.id === videoId ? { ...video, progress } : video
+      )
+    );
+  }
+
+  function handleUploadError(errorMessage, videoId) {
+    setProcessedVideos((prevVideos) =>
+      prevVideos.map((video) =>
+        video.id === videoId
+          ? { ...video, status: "failed", progress: 0 }
+          : video
+      )
+    );
+  }
 
   const ProcessedVideoCards = processedVideos.map((video, videoIndex) => {
-    return <ProcessedVideoCard key={videoIndex} video={video} />;
+    return <ProcessedVideoCard key={video.id || videoIndex} video={video} />;
   });
 
   return (
     <div className="space-y-4">
       <VideoUploadCard
-        isUploading={isUploading}
-        uploadProgress={uploadProgress}
+        onUploadStart={handleUploadStart}
+        onUploadComplete={handleUploadComplete}
+        onUploadProgress={handleUploadProgress}
+        onUploadError={handleUploadError}
       />
       <div>
         <h3 className="text-lg font-semibold tracking-tight">

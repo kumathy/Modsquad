@@ -16,6 +16,9 @@ __pycache__/
 *.pyc
 venv/
 
+# Uploaded videos go to this folder
+uploads/
+
 # Editor directories and files
 .vscode/
 !.vscode/extensions.json
