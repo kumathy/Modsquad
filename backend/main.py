@@ -36,10 +36,7 @@ async def root():
 
 
 @app.post("/process-video")
-async def process_video(
-    file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = None
-):
+async def process_video(file: UploadFile = File(...)):
     file_extension = Path(file.filename).suffix.lower()
 
     if file_extension not in ALLOWED_EXTENSIONS:
