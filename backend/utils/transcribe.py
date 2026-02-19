@@ -9,19 +9,21 @@ logger.info("Whisper model loaded successfully")
 
 
 def transcribe_audio(audio_path: str) -> dict:
+    temp = []
     logger.info(f"Transcribing: {audio_path}")
 
     segments, result = model.transcribe(audio_path, word_timestamps=True)
     for segment in segments:
         for word in segment.words:
-            print(f"{word.start:.2f}s → {word.end:.2f}s  {word.word}")
+            temp.append([word.start.item(), word.end.item(), word.word])
+            #print(f"{word.start:.2f}s → {word.end:.2f}s  {word.word}") This is to test if the time stamp code is working
 
-    logger.info(f"Transcription complete: {len(result.get('segments', []))} segments")
-    
+    logger.info(f"Transcription complete: {len(segments.get('segments', []))} segments")
     return {
-        "text": result["text"],
-        "language": result.get("language", "unknown"),
-        "segments": result.get("segments", [])
+        "text": segments["text"],
+        "language": segments.get("language", "unknown"),
+        "segments": segments.get("segments", []),
+        "timestamp":temp
     }
 
 def format_time(t):
