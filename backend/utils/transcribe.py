@@ -12,12 +12,9 @@ def transcribe_audio(audio_path: str) -> dict:
     logger.info(f"Transcribing: {audio_path}")
 
     segments, result = model.transcribe(audio_path, word_timestamps=True)
-    for segment in result.get("segments", []):
-       for word in segments.get("words",[]):
-           if word["segment"] == segment["id"]:
-               start = format_time(word["start"])
-               end = format_time(word["end"])
-               print(f"[{start} --> {end}] {word['text']}")
+    for segment in segments:
+        for word in segment.words:
+            print(f"{word.start:.2f}s → {word.end:.2f}s  {word.word}")
 
     logger.info(f"Transcription complete: {len(result.get('segments', []))} segments")
     
