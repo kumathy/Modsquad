@@ -57,8 +57,6 @@ To stop the backend:
 docker compose down
 ```
 
----
-
 ## Internal Development Guide
 
 ### Tech Stack
@@ -123,7 +121,7 @@ backend/Dockerfile       ← specifications for building the backend environment
 backend/requirements.txt ← Python packages to be installed inside the container
 ```
 
-The frontend is a runs outside Docker and communicates with the containerized backend over HTTP at `localhost:8000`.
+The frontend runs outside Docker and communicates with the containerized backend over HTTP at `localhost:8000`.
 
 > [!NOTE]
 > Please run `docker compose up --build` after modifying `requirements.txt` or `Dockerfile`
