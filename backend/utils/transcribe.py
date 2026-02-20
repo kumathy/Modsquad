@@ -1,10 +1,16 @@
 import whisper
+from faster_whisper import WhisperModel
 import logging
 
 logger = logging.getLogger(__name__)
+MODEL_SIZE="medium.en"
 
 logger.info("Loading Whisper model...")
-model = whisper.load_model("medium.en")
+model = WhisperModel(
+    MODEL_SIZE,
+    device="auto",      # for gpu change this to "cuda"    
+    compute_type="auto" # for gpu change this to float16
+)
 logger.info("Whisper model loaded successfully")
 
 
@@ -12,17 +18,31 @@ def transcribe_audio(audio_path: str) -> dict:
     temp = []
     logger.info(f"Transcribing: {audio_path}")
 
-    segments, result = model.transcribe(audio_path, word_timestamps=True)
+    segments,info = model.transcribe(audio_path, 
+                                        word_timestamps=True, 
+                                        beam_size=5, 
+                                        vad_filter=True)
+    segments=list(segments)
+    full_text=[]
+    temp=[]
+    for segment in segments:
+        full_text.append(segment.text)
+        for word in segment.words:
+            temp.append([word.start.item(), word.end.item(), word.word])
+    """
     for segment in segments:
         for word in segment.words:
             temp.append([word.start.item(), word.end.item(), word.word])
             #print(f"{word.start:.2f}s → {word.end:.2f}s  {word.word}") This is to test if the time stamp code is working
-
-    logger.info(f"Transcription complete: {len(segments.get('segments', []))} segments")
+    """        
+    logger.info(f"Transcription complete: {len(segments)} segments")
     return {
-        "text": segments["text"],
-        "language": segments.get("language", "unknown"),
-        "segments": segments.get("segments", []),
+        "text": "".join(full_text),
+        "language": info.language,
+        "segments": [
+            {"text": s.text} 
+            for s in segments
+        ],
         "timestamp":temp
     }
 
