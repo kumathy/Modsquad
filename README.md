@@ -4,6 +4,19 @@
     VOD + Real-time language control tool for streaming
 </p>
 
+## Table of Contents
+
+- [Running Locally](#running-locally)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Internal Development Guide](#internal-development-guide)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Installing shadcn/ui Components](#installing-shadcnui-components)
+  - [How Docker Works](#how-docker-works)
+  - [Adding Python Packages](#adding-python-packages)
+  - [Documentation](#documentation)
+
 ## Running Locally
 
 ### Prerequisites
@@ -13,13 +26,15 @@
 - [Python 3.12](https://www.python.org/downloads/release/python-3120/)
 - npm
 
-### 1. Clone the repository
+### Installation
+
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/kumathy/ModSquad.git && cd ModSquad
 ```
 
-### 2. Start the frontend
+#### 2. Start the frontend
 
 From the project root, install dependencies:
 
@@ -37,7 +52,7 @@ npm run dev
 npm run start
 ```
 
-### 3. Start the backend
+#### 3. Start the backend
 
 In another separate terminal, from the project root:
 
