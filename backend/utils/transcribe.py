@@ -1,4 +1,3 @@
-import whisper
 from faster_whisper import WhisperModel
 import logging
 
@@ -22,19 +21,13 @@ def transcribe_audio(audio_path: str) -> dict:
                                         word_timestamps=True, 
                                         beam_size=5, 
                                         vad_filter=True)
-    segments=list(segments)
     full_text=[]
     temp=[]
     for segment in segments:
         full_text.append(segment.text)
         for word in segment.words:
             temp.append([word.start.item(), word.end.item(), word.word])
-    """
-    for segment in segments:
-        for word in segment.words:
-            temp.append([word.start.item(), word.end.item(), word.word])
-            #print(f"{word.start:.2f}s → {word.end:.2f}s  {word.word}") This is to test if the time stamp code is working
-    """        
+                  
     logger.info(f"Transcription complete: {len(segments)} segments")
     return {
         "text": "".join(full_text),
