@@ -1,19 +1,25 @@
 import whisperx
 import logging
-
+import torch
 logger = logging.getLogger(__name__)
+def get_best_device():
+    if torch.cuda.is_available():
+        return "cuda"   
+    else:
+        return "cpu"
+DEVICE=get_best_device()
+COMPUTE_TYPE="float16" if DEVICE!="cpu" else "int8"
 MODEL_SIZE="medium.en"
-
 logger.info("Loading Whisper model...")
 model = whisperx.load_model(
     MODEL_SIZE,
-    device="cpu",      # for gpu change this to "cuda"    
-    compute_type="int8" # for gpu change this to float16
+    device=DEVICE,      # for gpu change this to "cuda"    
+    compute_type=COMPUTE_TYPE # for gpu change this to float16
 )
 
 align_model, align_metadata = whisperx.load_align_model(
     language_code="en",
-    device="cpu"
+    device=DEVICE
 )
 logger.info("Whisper models loaded successfully")
 
@@ -22,7 +28,7 @@ def transcribe_audio(audio_path: str) -> dict:
     audio=whisperx.load_audio(audio_path)
     logger.info(f"Transcribing: {audio_path}")
     result = model.transcribe(audio)
-    result = whisperx.align(result["segments"], align_model, align_metadata, audio, device="cpu")
+    result = whisperx.align(result["segments"], align_model, align_metadata, audio, device=DEVICE)
     logger.info(f"Transcription complete: {len(result['segments'])} segments")
     return {
         "text": "".join([s["text"] for s in result["segments"]]),
