@@ -4,59 +4,72 @@
     VOD + Real-time language control tool for streaming
 </p>
 
+## Table of Contents
+
+- [Running Locally](#running-locally)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Internal Development Guide](#internal-development-guide)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Installing shadcn/ui Components](#installing-shadcnui-components)
+  - [How Docker Works](#how-docker-works)
+  - [Adding Python Packages](#adding-python-packages)
+  - [Documentation](#documentation)
+
 ## Running Locally
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- Python (v3.8 or higher)
+- [Node.js](https://nodejs.org/) v18 or higher
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Python 3.12](https://www.python.org/downloads/release/python-3120/)
 - npm
-- pip
 
-1. **Clone the repository**
+### Installation
+
+#### 1. Clone the repository
 
 ```bash
-   git clone https://github.com/kumathy/ModSquad.git && cd ModSquad
+git clone https://github.com/kumathy/ModSquad.git && cd ModSquad
 ```
 
-2. **Frontend Setup**
+#### 2. Start the frontend
+
+From the project root, install dependencies:
 
 ```bash
-   # Navigate to frontend
-   cd frontend
-
-   # Install dependencies
-   npm install
-
-   # Start development server
-   npm run dev
+cd frontend && npm install
 ```
 
-In a **separate terminal**, start Electron:
+Start dev server and Electron in two separate terminals:
 
 ```bash
-   npm run start
+# Terminal 1 — Vite dev server
+npm run dev
+
+# Terminal 2 — Electron
+npm run start
 ```
 
-3. **Backend Setup**
+#### 3. Start the backend
 
-In yet another **separate terminal**:
+In another separate terminal, from the project root:
 
 ```bash
-   # Navigate to backend
-   cd backend
+docker compose up --build
+```
 
-   # Create virtual environment
-   python3 -m venv venv
+This builds the Python environment and starts the FastAPI server at `http://localhost:8000`. The `--build` flag is only needed the first time or after changes to `requirements.txt`/`Dockerfile`. After that, just run:
 
-   # Activate virtual environment
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+```bash
+docker compose up
+```
 
-   # Install dependencies
-   pip install -r requirements.txt
+To stop the backend:
 
-   # Start FastAPI server
-   uvicorn main:app --reload
+```bash
+docker compose down
 ```
 
 ## Internal Development Guide
@@ -69,19 +82,20 @@ In yet another **separate terminal**:
 - **shadcn/ui** - Component library
 - **Tailwind CSS** - CSS framework
 - **FastAPI** - Backend API
+- **OpenAI Whisper** - Speech-to-text transcription
+- **MoviePy** - Video/audio processing
+- **Docker** - Backend environment and dependency management
 
 ### Project Structure
 
 ```
 ModSquad/
+├── docker-compose.yml                 # Docker orchestration
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx                    # Main app component
 │   │   ├── components/
 │   │   │   ├── video/                 # Video processing components
-│   │   │   │   ├── VideoProcessor.jsx
-│   │   │   │   ├── VideoUploadCard.jsx
-│   │   │   │   └── ProcessedVideoCard.jsx
 │   │   │   └── ui/                    # shadcn components
 │   │   ├── index.jsx                  # React entry point
 │   │   └── lib/
@@ -90,7 +104,8 @@ ModSquad/
 ├── backend/
 │   ├── utils/                         # Backend utility functions
 │   ├── main.py                        # FastAPI entry point
-│   └── requirements.txt               # Python dependencies
+│   ├── requirements.txt               # Python dependencies
+│   └── Dockerfile                     # Backend container definition
 ```
 
 ### Installing `shadcn/ui` Components
@@ -111,6 +126,49 @@ npx shadcn@latest add tabs
 
 This will automatically put the components in `src/components/ui/`
 
+### How Docker works
+
+Our backend has a heavy dependency stack (ffmpeg, PyTorch, Whisper, MoviePy) that is difficult to install consistently across machines with different OSes. Docker solves this by packaging the backend and all its dependencies into a container, essentially  an isolated computer that we can all use to run the backend, solving the "But it works on my machine" problem.
+
+```
+docker-compose.yml       ← orchestrates the backend container
+backend/Dockerfile       ← specifications for building the backend environment
+backend/requirements.txt ← Python packages to be installed inside the container
+```
+
+The frontend runs outside Docker and communicates with the containerized backend over HTTP at `localhost:8000`.
+
+> [!NOTE]
+> Please run `docker compose up --build` after modifying `requirements.txt` or `Dockerfile`
+
+### Adding Python packages
+Only list direct dependencies in `requirements.txt` (Only whatever you're importing in `.py` files)
+
+**Steps to add a new package:**
+
+1. Install it into your local venv (for VS Code intellisense):
+   ```bash
+   pip install <package>
+   ```
+
+2. Check the installed version:
+   ```bash
+   pip show <package>
+   ```
+
+3. Manually add it to `backend/requirements.txt`:
+   ```
+   package-name==1.2.3
+   ```
+
+4. Rebuild the Docker container so it installs inside it too:
+   ```bash
+   docker compose up --build
+   ```
+
+> [!WARNING]
+> Do not use `pip freeze > requirements.txt`. This dumps all sub-dependencies with pinned versions in the file and makes it difficult to maintain.
+
 ### Documentation
 
-[React](https://react.dev) • [shadcn/ui](https://ui.shadcn.com/docs) • [Tailwind CSS](https://tailwindcss.com/docs) • [FastAPI](https://fastapi.tiangolo.com/)
+[React](https://react.dev) • [shadcn/ui](https://ui.shadcn.com/docs) • [Tailwind CSS](https://tailwindcss.com/docs) • [FastAPI](https://fastapi.tiangolo.com/) • [Docker](https://docs.docker.com/)
