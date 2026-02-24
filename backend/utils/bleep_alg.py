@@ -13,46 +13,75 @@ def make_censor_bleep(duration=0.3, freq=1000, volume=0.8, fps=44100):
     stereo = np.column_stack((val, val))   # shape (n_samples, 2)
     return AudioArrayClip(stereo, fps=fps)
 
-def bleep_video(input_path, output_path, start_time, end_time, use_bleep=True, bleep_duration=None):
+def bleep_video(input_path,
+                output_path,
+                intervals,
+                use_bleep=True,
+                bleep_duration=None):
+    
     video = VideoFileClip(input_path)
     original_audio = video.audio
 
     if original_audio is None:
         raise ValueError("Video has no audio track")
     
-    duration = original_audio.duration
-    fps = original_audio.fps
+    total_duration = original_audio.duration
+    audio_fps = original_audio.fps
 
-    if start_time < 0 or end_time > duration or start_time >= end_time:
-        raise ValueError("Invalid time rnage")
-    
-    segment_dration = end_time - start_time
+    if not intervals:
+        print("No intervals provided -> copying original video")
+        video.write_videofile(
+            str(output_path),
+            codec="lidx264",
+            audio_codec="aac",
+            preset="medium",
+            threads=4
+        )
+        video.close()
+        return
+    ivals = sorted([list(pair) for pair in intervals])
 
-    if use_bleep:
-        bleep_len = bleep_duration if bleep_duration is not None else segment_dration
-        censor_sound = make_censor_bleep(duration=bleep_len)
-    else:
-        censor_sound = make_silence(segment_dration)
+    merged = []
+    for curr in ivals:
+        if not merged or merged[-1][1] < curr[0]:
+            merged.append(curr)
+        else:
+            merged[-1][1] = max(merged[-1][1], curr[1])
     
     pieces = []
+    last_end = 0.0
 
-    if start_time > 0:
-        pieces.append(original_audio.subclipped(0, start_time))
+    for start, end in merged:
+        if start < 0 or end > total_duration or start >= end:
+            print(f"Warning: skipping invalid interval [{start}, {end}]")
+            continue
+        if start > last_end:
+            pieces.append(original_audio.subclipped(last_end, start))
+        segment_duration = end - start
 
-    pieces.append(censor_sound)
+        if use_bleep:
+            bleep_len = bleep_duration if bleep_duration is not None else segment_duration
+            censor = make_censor_bleep(duration=bleep_len, fps=audio_fps)
 
-    if end_time < duration:
-        pieces.append(original_audio.subclipped(end_time, duration))
-
+            if bleep_len < segment_duration:
+                censor = censor.loop(duration=segment_duration)
+            pieces.append(censor)
+        else:
+            pieces.append(make_silence(segment_duration, fps=audio_fps))
+        last_end = end
+    
+    if last_end < total_duration:
+        pieces.append(original_audio.subclipped(last_end, total_duration))
+    
     for i, p in enumerate(pieces):
-        print(f"Piece {i}: duration={p.duration:.2f}s, nchannels={p.nchannels if hasattr(p,'nchannels') else 'unknown'}")
-
+        ch = p.nchannels if hasattr(p, 'nchannels') else '?'
+        print(f"Piece {i:2d}: duration={p.duration:6.2f}s channels={ch}")\
+        
     final_audio = concatenate_audioclips(pieces)
-
     final_video = video.with_audio(final_audio)
 
     final_video.write_videofile(
-        output_path,
+        str(output_path),
         codec="libx264",
         audio_codec="aac",
         temp_audiofile="temp-audio.m4a",
@@ -67,11 +96,15 @@ def bleep_video(input_path, output_path, start_time, end_time, use_bleep=True, b
 input_video = SCRIPT_DIR / "TestClip01.mp4"
 output_video = SCRIPT_DIR / "output_beep_test01.mp4"
 
+censor_intervals = [
+    (17.0, 19.0),
+    (27.0, 29.0)
+]
+
 bleep_video(
     str(input_video),
     str(output_video),
-    start_time=27,
-    end_time=29,
+    intervals=censor_intervals,
     use_bleep=True,
     bleep_duration=2.0
 )
