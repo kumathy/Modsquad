@@ -1,51 +1,58 @@
-from faster_whisper import WhisperModel
+import whisperx
 import logging
-
+import torch
 logger = logging.getLogger(__name__)
+def get_best_device():
+    if torch.cuda.is_available():
+        return "cuda"   
+    else:
+        return "cpu"
+DEVICE=get_best_device()
+COMPUTE_TYPE="float16" if DEVICE!="cpu" else "int8"
 MODEL_SIZE="medium.en"
-
 logger.info("Loading Whisper model...")
-model = WhisperModel(
+model = whisperx.load_model(
     MODEL_SIZE,
-    device="auto",      # for gpu change this to "cuda"    
-    compute_type="auto" # for gpu change this to float16
+    device=DEVICE,      # for gpu change this to "cuda"    
+    compute_type=COMPUTE_TYPE # for gpu change this to float16
 )
-logger.info("Whisper model loaded successfully")
+
+align_model, align_metadata = whisperx.load_align_model(
+    language_code="en",
+    device=DEVICE
+)
+logger.info("Whisper models loaded successfully")
 
 
 def transcribe_audio(audio_path: str) -> dict:
-    temp = []
+    audio=whisperx.load_audio(audio_path)
     logger.info(f"Transcribing: {audio_path}")
+    result = model.transcribe(audio)
+    result = whisperx.align(result["segments"], align_model, align_metadata, audio, device=DEVICE)
+    logger.info(f"Transcription complete: {len(result['segments'])} segments")
 
-    segments,info = model.transcribe(audio_path,
-                                        word_timestamps=True,
-                                        beam_size=5,
-                                        vad_filter=False)
-    segments = list(segments)
-    full_text=[]
-    temp=[]
-    for segment in segments:
-        full_text.append(segment.text)
-        for word in segment.words:
-            temp.append([word.start, word.end, word.word])
-                  
-    logger.info(f"Transcription complete: {len(segments)} segments")
+    temp = []
+    for segment in result["segments"]:
+        for word in segment.get("words", []):
+            if "start" in word and "end" in word:
+                temp.append([word["start"], word["end"], word["word"]])
+
     return {
-        "text": "".join(full_text),
-        "language": info.language,
+        "text": "".join([s["text"] for s in result["segments"]]),
+        "language": "en",
         "segments": [
-            {"text": s.text} 
-            for s in segments
+            {"text": s["text"], "start": s["start"], "end": s["end"]}
+            for s in result["segments"]
         ],
-        "timestamp":temp
+        "timestamp": temp
     }
-
+"""
 def format_time(t):
     hrs, rem = divmod(t, 3600)
     mins, secs = divmod(rem, 60)
     ms = int((t - int(t)) * 1000)
     return f"{int(hrs):02}:{int(mins):02}:{int(secs):02},{ms:03}"
-
+"""
 # For testing purposes
 if __name__ == "__main__":
     import sys
@@ -60,7 +67,7 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print("TRANSCRIPTION RESULT")
     print("="*60)
-    print(f"Language: {result['language']}")
+    #print(f"Language: {result['language']}")
     print(f"Segments: {len(result['segments'])}")
     print(f"\nTranscript:\n{result['text']}")
     print("="*60)

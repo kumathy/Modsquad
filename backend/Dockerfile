@@ -12,11 +12,12 @@ COPY requirements.txt .
 
 # Install PyTorch (CPU only)
 RUN pip install --no-cache-dir \
-    torch==2.10.0 torchaudio==2.10.0 \
+    torch==2.8.0 torchaudio==2.8.0 \
     --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining dependencies in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
 
 COPY . .
 
