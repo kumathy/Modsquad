@@ -22,7 +22,8 @@ align_model, align_metadata = whisperx.load_align_model(
     device=DEVICE
 )
 logger.info("Whisper models loaded successfully")
-
+def process_timestamps(ts_list):
+    print("Processing timestamps:", ts_list)
 
 def transcribe_audio(audio_path: str) -> dict:
     audio=whisperx.load_audio(audio_path)
@@ -35,7 +36,8 @@ def transcribe_audio(audio_path: str) -> dict:
     for segment in result["segments"]:
         for word in segment.get("words", []):
             if "start" in word and "end" in word:
-                temp.append([word["start"], word["end"], word["word"]])
+                temp.append([word["start"], word["end"]])
+    process_timestamps(temp)
 
     return {
         "text": "".join([s["text"] for s in result["segments"]]),
