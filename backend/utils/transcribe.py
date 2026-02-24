@@ -17,16 +17,17 @@ def transcribe_audio(audio_path: str) -> dict:
     temp = []
     logger.info(f"Transcribing: {audio_path}")
 
-    segments,info = model.transcribe(audio_path, 
-                                        word_timestamps=True, 
-                                        beam_size=5, 
-                                        vad_filter=True)
+    segments,info = model.transcribe(audio_path,
+                                        word_timestamps=True,
+                                        beam_size=5,
+                                        vad_filter=False)
+    segments = list(segments)
     full_text=[]
     temp=[]
     for segment in segments:
         full_text.append(segment.text)
         for word in segment.words:
-            temp.append([word.start.item(), word.end.item(), word.word])
+            temp.append([word.start, word.end, word.word])
                   
     logger.info(f"Transcription complete: {len(segments)} segments")
     return {
