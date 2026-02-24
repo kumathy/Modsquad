@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import VideoProcessor from "@/components/video/VideoProcessor";
 
 import { Film, Radio, Settings2 } from "lucide-react";
+import Settings from "./components/video/Settings";
 
 export default function App() {
   return (
@@ -67,8 +68,9 @@ export default function App() {
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Settings
                 </h2>
-                <p className="text-muted-foreground">Coming soon!</p>
+                <p className="text-muted-foreground">Adjust moderation settings here, such as words to filter and sensitivity.</p>
               </div>
+              <Settings />
             </TabsContent>
           </div>
         </Tabs>

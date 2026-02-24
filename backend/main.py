@@ -6,6 +6,7 @@ from pathlib import Path
 import logging
 
 from utils.transcribe import transcribe_audio
+from utils.settings import router as settings_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ ALLOWED_EXTENSIONS = {".mp4", ".mov", ".avi", ".mp3", ".wav", ".m4a"}
 async def root():
     return {"message": "Modsquad backend is running"}
 
+app.include_router(settings_router, prefix="/settings")
 
 @app.post("/process-video")
 async def process_video(file: UploadFile = File(...)):
