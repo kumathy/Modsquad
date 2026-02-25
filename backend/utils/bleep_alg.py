@@ -97,8 +97,8 @@ input_video = SCRIPT_DIR / "TestClip01.mp4"
 output_video = SCRIPT_DIR / "output_beep_test01.mp4"
 
 censor_intervals = [
-    (17.0, 19.0),
-    (27.0, 29.0)
+    (18.5, 19.0),
+    (23.5, 24.0)
 ]
 
 bleep_video(
@@ -106,5 +106,5 @@ bleep_video(
     str(output_video),
     intervals=censor_intervals,
     use_bleep=True,
-    bleep_duration=2.0
+    bleep_duration=0.5
 )
