@@ -4,8 +4,8 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 
-def make_silence(duration):
-    return AudioClip(lambda t: 0 * t, duration=duration, fps=44100)
+def make_silence(duration, fps=44100):
+    return AudioClip(lambda t: 0 * t, duration=duration, fps=fps)
 
 def make_censor_bleep(duration=0.3, freq=1000, volume=0.8, fps=44100):
     t = np.linspace(0, duration, int(duration * fps), endpoint=False)
@@ -16,8 +16,7 @@ def make_censor_bleep(duration=0.3, freq=1000, volume=0.8, fps=44100):
 def bleep_video(input_path,
                 output_path,
                 intervals,
-                use_bleep=True,
-                bleep_duration=None):
+                use_bleep=True):
     
     video = VideoFileClip(input_path)
     original_audio = video.audio
@@ -60,11 +59,7 @@ def bleep_video(input_path,
         segment_duration = end - start
 
         if use_bleep:
-            bleep_len = bleep_duration if bleep_duration is not None else segment_duration
-            censor = make_censor_bleep(duration=bleep_len, fps=audio_fps)
-
-            if bleep_len < segment_duration:
-                censor = censor.loop(duration=segment_duration)
+            censor = make_censor_bleep(duration=segment_duration, fps=audio_fps)
             pieces.append(censor)
         else:
             pieces.append(make_silence(segment_duration, fps=audio_fps))
@@ -93,12 +88,12 @@ def bleep_video(input_path,
     video.close()
     final_video.close()
 
-input_video = SCRIPT_DIR / "TestClip01.mp4"
-output_video = SCRIPT_DIR / "output_beep_test01.mp4"
+input_video = SCRIPT_DIR / "fixed_input.mp4"
+output_video = SCRIPT_DIR / "output_beep_test02.mp4"
 
 censor_intervals = [
-    (17.0, 19.0),
-    (27.0, 29.0)
+    (19.0, 19.5),
+    (23.0, 23.5)
 ]
 
 bleep_video(
@@ -106,5 +101,4 @@ bleep_video(
     str(output_video),
     intervals=censor_intervals,
     use_bleep=True,
-    bleep_duration=2.0
 )
