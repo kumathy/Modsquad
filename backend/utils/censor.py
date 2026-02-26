@@ -1,10 +1,10 @@
 
-from transcribe import process_timestamps, transcribe_audio
+from transcribe import transcribe_audio
 from bleep_alg import bleep_video
-
+from wordList_Loader import find_timestamp_matches
 def censor_video(input_path, output_path):
     result = transcribe_audio(input_path)
-    timestamps = result["timestamp"]
+    timestamps=find_timestamp_matches(result, "wordlist.txt")
     bleep_video(input_path,output_path,timestamps,use_bleep=True,bleep_duration=None)
 
 

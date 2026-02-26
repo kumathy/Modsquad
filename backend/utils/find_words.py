@@ -7,10 +7,12 @@ def find_word_matches(plaintext, wordlist):
         return []
     pattern = r'\b(' + '|'.join(words) + r')\b'
     regex = re.compile(pattern)
+    """
     with open(plaintext, 'r', encoding='utf-8') as f:
         text = f.read()
+    """
     matches = []
-    for match in regex.finditer(text):
+    for match in regex.finditer(plaintext):
         word = match.group(1)
         start = match.start()
         end = match.end()
