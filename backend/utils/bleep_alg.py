@@ -87,7 +87,7 @@ def bleep_video(input_path,
 
     video.close()
     final_video.close()
-
+"""
 input_video = SCRIPT_DIR / "fixed_input.mp4"
 output_video = SCRIPT_DIR / "output_beep_test02.mp4"
 
@@ -102,3 +102,4 @@ bleep_video(
     intervals=censor_intervals,
     use_bleep=True,
 )
+"""

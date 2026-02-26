@@ -1,11 +1,13 @@
-
+"""
+This is just a test script to make sure that the fastapi script works locally atleast
+"""
 from transcribe import transcribe_audio
 from bleep_alg import bleep_video
-from wordList_Loader import find_timestamp_matches
+from find_words import find_word_matches
 def censor_video(input_path, output_path):
     result = transcribe_audio(input_path)
-    timestamps=find_timestamp_matches(result, "wordlist.txt")
-    bleep_video(input_path,output_path,timestamps,use_bleep=True,bleep_duration=None)
+    matches, timestamps = find_word_matches(result, "wordlist.txt")
+    bleep_video(input_path,output_path,timestamps,use_bleep=True)
 
 
 if __name__ == "__main__":
@@ -16,7 +18,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     audio_file = sys.argv[1]
-    output_path = sys.argv[3]
+    output_path = sys.argv[2]
     censor_video(audio_file, output_path)
 
 
