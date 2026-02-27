@@ -3,10 +3,11 @@ This is just a test script to make sure that the fastapi script works locally at
 """
 from transcribe import transcribe_audio
 from bleep_alg import bleep_video
-from find_words import find_word_matches
+from find_words import updated_find_word_matches,find_word_matches
 def censor_video(input_path, output_path):
     result = transcribe_audio(input_path)
-    matches, timestamps = find_word_matches(result, "wordlist.txt")
+    print(result['text'])
+    matches, timestamps = updated_find_word_matches(result['timestamp'], "words.txt")
     bleep_video(input_path,output_path,timestamps,use_bleep=True)
 
 

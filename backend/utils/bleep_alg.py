@@ -31,7 +31,7 @@ def bleep_video(input_path,
         print("No intervals provided -> copying original video")
         video.write_videofile(
             str(output_path),
-            codec="lidx264",
+            codec="libx264",
             audio_codec="aac",
             preset="medium",
             threads=4
