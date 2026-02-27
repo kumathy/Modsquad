@@ -8,7 +8,7 @@ import logging
 from utils.transcribe import transcribe_audio
 from utils.settings import router as settings_router
 from utils.bleep_alg import bleep_video
-from utils.wordList_Loader import find_timestamp_matches
+from utils.find_words import updated_find_word_matches
 
 
 
@@ -116,7 +116,7 @@ async def process_vod(file: UploadFile = File(...)):
         
         logger.info("Transcribing audio...")
         result = transcribe_audio(str(file_path))
-        timestamps=find_timestamp_matches(result, "wordlist.txt")
+        timestamps=updated_find_word_matches(result['timestamp'], "wordlist.txt")
         output_path = file_path.with_suffix(".censored.mp4")
         bleep_video(str(file_path),str(output_path),timestamps,use_bleep=True,bleep_duration=None)
         logger.info(f"Transcription complete: {len(result['segments'])} segments")
