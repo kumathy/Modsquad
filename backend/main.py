@@ -115,22 +115,26 @@ async def process_vod(file: UploadFile = File(...)):
         logger.info(f"File size: {file_size_mb} MB")
         
         logger.info("Transcribing audio...")
-        result = transcribe_audio(str(file_path))
-        timestamps=updated_find_word_matches(result['timestamp'], "wordlist.txt")
-        output_path = file_path.with_suffix(".censored.mp4")
-        bleep_video(str(file_path),str(output_path),timestamps,use_bleep=True,bleep_duration=None)
-        logger.info(f"Transcription complete: {len(result['segments'])} segments")
-        logger.info("=" * 80)
-        return JSONResponse({
-            "success": True,
-            "filename": file.filename,
-            "file_size_mb": file_size_mb,
-            "transcript": {
-                "text": result["text"],
-                "language": result["language"],
-                "segment_count": len(result["segments"])
-            },
-        })
+        if (str(file_path)!=str(output_path)):
+            result = transcribe_audio(str(file_path))
+            timestamps=updated_find_word_matches(result['timestamp'], "wordlist.txt")
+            output_path = file_path.with_suffix(".censored.mp4")
+            bleep_video(str(file_path),str(output_path),timestamps,use_bleep=True,bleep_duration=None)
+            logger.info(f"Transcription complete: {len(result['segments'])} segments")
+            logger.info("=" * 80)
+            return JSONResponse({
+                "success": True,
+                "filename": file.filename,
+                "file_size_mb": file_size_mb,
+                "transcript": {
+                    "text": result["text"],
+                    "language": result["language"],
+                    "segment_count": len(result["segments"])
+                },
+            })
+        else:
+            logger.warning("Input and output paths are the same. Skipping processing to avoid overwriting.")
+            raise HTTPException(status_code=400, detail="Input and output paths cannot be the same.")
     
     except Exception as e:
         logger.error(f"Processing failed: {e}")
