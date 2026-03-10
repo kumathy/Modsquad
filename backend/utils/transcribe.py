@@ -70,7 +70,6 @@ if __name__ == "__main__":
     
     print("\n" + "="*60)
     print("TRANSCRIPTION RESULT")
-    print(result)
     print("="*60)
     #print(f"Language: {result['language']}")
     print(f"Segments: {len(result['segments'])}")

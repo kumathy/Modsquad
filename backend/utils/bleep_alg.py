@@ -79,10 +79,13 @@ def bleep_video(input_path,
         str(output_path),
         codec="libx264",
         audio_codec="aac",
+        ffmpeg_params=[
+        "-crf", "18",
+        "-vf", "fps=30"],
         temp_audiofile="temp-audio.m4a",
         remove_temp=True,
         preset="medium",
-        threads=4
+        threads=4,
     )
 
     video.close()
