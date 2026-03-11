@@ -18,6 +18,7 @@ venv/
 
 # Uploaded videos go to this folder
 uploads/
+backend/data/
 
 # Editor directories and files
 .vscode/
