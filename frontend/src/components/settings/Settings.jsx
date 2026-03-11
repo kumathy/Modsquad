@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 export default function Settings() {
   const [filterWords, setFilterWords] = useState([]);
@@ -11,27 +18,27 @@ export default function Settings() {
   const API_URL = "http://localhost:8000/settings";
 
   async function handleAddWord() {
-  const trimmed = newWord.trim().toLowerCase();
-  if (!trimmed) return;
+    const trimmed = newWord.trim().toLowerCase();
+    if (!trimmed) return;
 
-  try {
-    const res = await fetch("http://localhost:8000/settings/add-word", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ word: trimmed }),
-    });
+    try {
+      const res = await fetch("http://localhost:8000/settings/add-word", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word: trimmed }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    // Update UI with backend response
-    setFilterWords(data.words || []);
-    setNewWord("");
-  } catch (err) {
-    console.error("Error sending word to backend:", err);
+      // Update UI with backend response
+      setFilterWords(data.words || []);
+      setNewWord("");
+    } catch (err) {
+      console.error("Error sending word to backend:", err);
+    }
   }
-}
 
   async function loadWords() {
     try {
@@ -47,39 +54,39 @@ export default function Settings() {
     loadWords();
   }, []);
 
-async function handleRemoveWord(word) {
-  try {
-    const res = await fetch("http://localhost:8000/settings/remove-word", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ word }),
-    });
+  async function handleRemoveWord(word) {
+    try {
+      const res = await fetch("http://localhost:8000/settings/remove-word", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setFilterWords(data.words || []);
-  } catch (err) {
-    console.error("Error removing word:", err);
+      setFilterWords(data.words || []);
+    } catch (err) {
+      console.error("Error removing word:", err);
+    }
   }
-}
 
-const visibleWords = useMemo(() => {
+  const visibleWords = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return filterWords;
     return filterWords.filter((w) => w.toLowerCase().includes(q));
   }, [filterWords, searchTerm]);
 
   return (
-    <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold">Word Filter</h3>
-          <p className="text-sm text-muted-foreground">
-            Add words you want automatically filtered.
-          </p>
-        </div>
-
+    <Card>
+      <CardHeader>
+        <CardTitle>Word Filter</CardTitle>
+        <CardDescription>
+          Add words you want automatically filtered.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <div className="flex gap-2">
           <Input
             value={newWord}
@@ -89,41 +96,42 @@ const visibleWords = useMemo(() => {
             }}
             placeholder="Enter word"
           />
-          <Button onClick={handleAddWord}>
+          <Button onClick={handleAddWord} className="gap-1.5">
+            <Plus className="w-4 h-4" />
             Add
           </Button>
         </div>
 
         <Input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search words..."
-              />
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search words..."
+        />
 
         <div className="flex flex-wrap gap-2">
-        {visibleWords.map((word, index) => (
-          <Badge
-            key={`${word}-${index}`}
-            variant="secondary"
-            className="flex items-center gap-1"
-          >
-            {word}
-            <button
-              type="button"
-              onClick={() => handleRemoveWord(word)}
-              className="ml-1 text-xs hover:text-red-500"
-              aria-label={`Remove ${word}`}
+          {visibleWords.map((word, index) => (
+            <Badge
+              key={`${word}-${index}`}
+              variant="secondary"
+              className="flex items-center gap-1"
             >
-              ✕
-            </button>
-          </Badge>
-        ))}
+              {word}
+              <button
+                type="button"
+                onClick={() => handleRemoveWord(word)}
+                className="ml-1 text-xs hover:text-red-500"
+                aria-label={`Remove ${word}`}
+              >
+                ✕
+              </button>
+            </Badge>
+          ))}
 
-        {/* Optional: empty state */}
-        {visibleWords.length === 0 && (
-          <p className="text-sm text-muted-foreground">No matching words.</p>
-        )}
-      </div>
-    </div>
+          {visibleWords.length === 0 && (
+            <p className="text-sm text-muted-foreground">No matching words.</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
