@@ -23,9 +23,8 @@ def find_word_matches(plaintext, wordlist):
     print (timestamps)
     return matches, timestamps
 
-def updated_find_word_matches(text, wordList):
-    with open(wordList, 'r', encoding='utf-8') as f:
-        words = {line.strip().lower() for line in f if line.strip()}
+def updated_find_word_matches(text, word_list):
+    words = {word.strip().lower() for word in word_list if word.strip()}
 
     if not words:
         return [], []
@@ -34,9 +33,7 @@ def updated_find_word_matches(text, wordList):
     timestamps = []
 
     for start, end, word in text:
-        print(word)
         clean_word = word.lower()
-        print (clean_word)
         if clean_word in words:
             matches.append((clean_word, start, end))
             timestamps.append((start, end))
