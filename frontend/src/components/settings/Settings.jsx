@@ -79,7 +79,7 @@ export default function Settings() {
   }, [filterWords, searchTerm]);
 
   return (
-    <Card>
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle>Word Filter</CardTitle>
         <CardDescription>

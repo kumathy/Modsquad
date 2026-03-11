@@ -10,13 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  ScanSearch,
-  Square,
-  AlertTriangle,
-  Volume2,
-  Activity,
-} from "lucide-react";
+import { ScanSearch, Square, AlertTriangle, Activity } from "lucide-react";
 
 export default function StreamProcessor() {
   const [isStreaming, setIsStreaming] = useState(false);
@@ -63,7 +57,7 @@ export default function StreamProcessor() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle>Real-Time Stream Processing</CardTitle>
           <CardDescription>
@@ -150,7 +144,7 @@ export default function StreamProcessor() {
       </Card>
 
       {/* Detection Log */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle>Detection Log</CardTitle>
           <CardDescription>
