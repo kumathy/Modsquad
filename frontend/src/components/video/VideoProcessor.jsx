@@ -54,7 +54,7 @@ export default function VideoProcessor() {
               ...video,
               status: "completed",
               profanitiesDetected: result.profanity?.total_flagged || 0,
-              wordsReplaced: result.profanity?.total_flagged || 0,
+              wordsReplaced: result.profanity?.words_replaced || 0,
               progress: 100,
               downloadUrl: result.download_url,
               fullResult: result,

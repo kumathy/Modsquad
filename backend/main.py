@@ -87,6 +87,11 @@ async def process_vod(file: UploadFile = File(...)):
                 "language": result["language"],
                 "segment_count": len(result["segments"])
             },
+            "profanity": {
+                "total_flagged": len(matches),
+                "words_replaced": len(timestamps),
+                "matched_words": [word for word, start, end in matches],
+            },
             "download_url": f"/download/{output_path.name}",
         })
 
