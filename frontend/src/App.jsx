@@ -11,6 +11,8 @@ import Settings from "@/components/settings/Settings";
 import { Film, Radio, Settings2 } from "lucide-react";
 
 export default function App() {
+  const [processedVideos, setProcessedVideos] = useState([]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -52,7 +54,10 @@ export default function App() {
                   version with AI-cloned voice replacement.
                 </p>
               </div>
-              <VideoProcessor />
+              <VideoProcessor
+                processedVideos={processedVideos}
+                setProcessedVideos={setProcessedVideos}
+              />
             </TabsContent>
 
             <TabsContent value="real-time" className="space-y-6">
