@@ -71,7 +71,13 @@ export default function VideoProcessor({ processedVideos, setProcessedVideos }) 
           Processed Videos
         </h3>
       </div>
-      {ProcessedVideoCards}
+      {processedVideos.length > 0 ? (
+        ProcessedVideoCards
+      ) : (
+        <div className="border-2 border-dashed rounded-lg py-10 text-center text-sm text-muted-foreground">
+          Processed videos will appear here.
+        </div>
+      )}
     </div>
   );
 }
