@@ -9,23 +9,44 @@ tts = TTS(
     gpu=False
 )
 
-text = "Hello. This is a test of the Glow TTS model running locally."
+def gather_text(text_input, start_time, end_time):
+    target_sr = 44100
+    target_duration = end_time - start_time
 
-# Generate audio
-wav = tts.tts(text)
+    # Generate TTS
+    wav = tts.tts(text_input)
 
-# Convert list → numpy
-wav = np.array(wav)
+    # Keep as floating point
+    wav = np.array(wav, dtype=np.float32)
 
-# Resample to Mac-friendly 44.1kHz
-wav_44k = librosa.resample(wav, orig_sr=22050, target_sr=44100)
+    # Resample to 44.1 kHz
+    wav = librosa.resample(wav, orig_sr=22050, target_sr=target_sr)
 
-# Convert to PCM16
-wav_int16 = np.int16(wav_44k * 32767)
+    # Measure duration using correct sample rate
+    original_duration = librosa.get_duration(y=wav, sr=target_sr)
 
-# Force stereo (Mac safest)
-wav_stereo = np.stack([wav_int16, wav_int16], axis=1)
+    # Stretch while still mono float
+    rate = original_duration / target_duration
+    wav = librosa.effects.time_stretch(y=wav, rate=rate)
 
-sf.write("output.wav", wav_stereo, 44100, subtype='PCM_16')
+    # Force exact final length
+    target_samples = int(target_duration * target_sr)
 
-print("Saved Mac-compatible audio.")
+    if len(wav) < target_samples:
+        padding = np.zeros(target_samples - len(wav), dtype=np.float32)
+        wav = np.concatenate([wav, padding])
+    else:
+        wav = wav[:target_samples]
+
+    # Convert to PCM16
+    wav_int16 = np.int16(np.clip(wav, -1.0, 1.0) * 32767)
+
+    # Make stereo after stretching
+    wav_stereo = np.stack([wav_int16, wav_int16], axis=1)
+
+    # Save
+    sf.write("output.wav", wav_stereo, target_sr, subtype="PCM_16")
+    return wav_stereo
+
+#example usage
+gather_text("Flak this", 0, 2)
