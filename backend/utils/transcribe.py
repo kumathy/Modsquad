@@ -23,9 +23,7 @@ align_model, align_metadata = whisperx.load_align_model(
 )
 logger.info("Whisper models loaded successfully")
 def process_timestamps(ts_list):
-    print("Processing timestamps:")
-    for ts in ts_list:
-        print(ts)
+    logger.info(f"Word timestamps extracted: {len(ts_list)} words")
 
 def transcribe_audio(audio_path: str) -> dict:
     audio=whisperx.load_audio(audio_path)
@@ -70,7 +68,6 @@ if __name__ == "__main__":
     
     print("\n" + "="*60)
     print("TRANSCRIPTION RESULT")
-    print(result)
     print("="*60)
     #print(f"Language: {result['language']}")
     print(f"Segments: {len(result['segments'])}")

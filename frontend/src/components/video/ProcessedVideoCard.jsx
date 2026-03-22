@@ -74,9 +74,22 @@ export default function ProcessedVideoCard({ video }) {
                 <Play className="w-4 h-4 mr-2" />
                 Preview
               </Button>
-              <Button size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Download
+              <Button
+                size="sm"
+                asChild={!!video.downloadUrl}
+                disabled={!video.downloadUrl}
+              >
+                {video.downloadUrl ? (
+                  <a href={`http://localhost:8000${video.downloadUrl}`} download>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </a>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </>
+                )}
               </Button>
             </div>
           )}

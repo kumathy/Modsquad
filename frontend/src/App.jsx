@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 import VideoProcessor from "@/components/video/VideoProcessor";
+import StreamProcessor from "@/components/stream/StreamProcessor";
+import Settings from "@/components/settings/Settings";
 
 import { Film, Radio, Settings2 } from "lucide-react";
-import Settings from "./components/video/Settings";
 
 export default function App() {
+  const [processedVideos, setProcessedVideos] = useState([]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -28,7 +31,7 @@ export default function App() {
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="vod" className="gap-2">
               <Film className="w-4 h-4" />
-              VOD
+              Video
             </TabsTrigger>
             <TabsTrigger value="real-time" className="gap-2">
               <Radio className="w-4 h-4" />
@@ -44,31 +47,41 @@ export default function App() {
             <TabsContent value="vod" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
-                  VOD Processing
+                  Video Processing
                 </h2>
                 <p className="text-muted-foreground">
                   Upload your videos/recorded streams to receive a censored
                   version with AI-cloned voice replacement.
                 </p>
               </div>
-              <VideoProcessor />
+              <VideoProcessor
+                processedVideos={processedVideos}
+                setProcessedVideos={setProcessedVideos}
+              />
             </TabsContent>
 
-            <TabsContent value="real-time">
+            <TabsContent value="real-time" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Real-time Stream Monitoring
                 </h2>
-                <p className="text-muted-foreground">Coming soon!</p>
+                <p className="text-muted-foreground">
+                  Monitor and censor your live stream in real-time with a
+                  processing delay.
+                </p>
               </div>
+              <StreamProcessor />
             </TabsContent>
 
-            <TabsContent value="settings">
+            <TabsContent value="settings" className="space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Settings
                 </h2>
-                <p className="text-muted-foreground">Adjust moderation settings here, such as words to filter and sensitivity.</p>
+                <p className="text-muted-foreground">
+                  Adjust moderation settings here, such as words to filter and
+                  sensitivity.
+                </p>
               </div>
               <Settings />
             </TabsContent>
