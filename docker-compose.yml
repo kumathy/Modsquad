@@ -4,6 +4,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "8000:8000"
     volumes:
