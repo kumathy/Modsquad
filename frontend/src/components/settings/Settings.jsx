@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -12,123 +13,235 @@ import {
 import { Plus } from "lucide-react";
 
 export default function Settings() {
-  const [filterWords, setFilterWords] = useState([]);
-  const [newWord, setNewWord] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filterSets, setFilterSets] = useState([]);
+  const [newSetName, setNewSetName] = useState("");
+  const [newWordsBySet, setNewWordsBySet] = useState({});
+  const [searchTermsBySet, setSearchTermsBySet] = useState({});
   const API_URL = "http://localhost:8000/settings";
 
-  async function handleAddWord() {
-    const trimmed = newWord.trim().toLowerCase();
-    if (!trimmed) return;
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialFilterSets() {
+      try {
+        const res = await fetch(`${API_URL}/filter-sets`);
+        const data = await res.json();
+        if (isMounted) {
+          setFilterSets(data.filter_sets || []);
+        }
+      } catch (err) {
+        console.error("Error loading filter sets:", err);
+      }
+    }
+
+    loadInitialFilterSets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  async function handleCreateSet() {
+    const trimmedName = newSetName.trim();
+    if (!trimmedName) return;
 
     try {
-      const res = await fetch("http://localhost:8000/settings/add-word", {
+      const res = await fetch(`${API_URL}/filter-sets`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ word: trimmed }),
+        body: JSON.stringify({ name: trimmedName }),
       });
-
       const data = await res.json();
-
-      // Update UI with backend response
-      setFilterWords(data.words || []);
-      setNewWord("");
+      setFilterSets(data.filter_sets || []);
+      setNewSetName("");
     } catch (err) {
-      console.error("Error sending word to backend:", err);
+      console.error("Error creating filter set:", err);
     }
   }
 
-  async function loadWords() {
+  async function handleToggleSet(setId, enabled) {
     try {
-      const res = await fetch(`${API_URL}/words`);
+      const res = await fetch(`${API_URL}/filter-sets/${setId}/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ enabled }),
+      });
       const data = await res.json();
-      setFilterWords(data.words || []);
+      setFilterSets(data.filter_sets || []);
     } catch (err) {
-      console.error("Error loading words:", err);
+      console.error("Error toggling filter set:", err);
     }
   }
 
-  useEffect(() => {
-    loadWords();
-  }, []);
+  async function handleAddWord(setId) {
+    const pendingWord = (newWordsBySet[setId] || "").trim().toLowerCase();
+    if (!pendingWord) return;
 
-  async function handleRemoveWord(word) {
     try {
-      const res = await fetch("http://localhost:8000/settings/remove-word", {
+      const res = await fetch(`${API_URL}/filter-sets/${setId}/add-word`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word: pendingWord }),
+      });
+      const data = await res.json();
+      setFilterSets(data.filter_sets || []);
+      setNewWordsBySet((prev) => ({ ...prev, [setId]: "" }));
+    } catch (err) {
+      console.error("Error adding word to set:", err);
+    }
+  }
+
+  async function handleRemoveWord(setId, word) {
+    try {
+      const res = await fetch(`${API_URL}/filter-sets/${setId}/remove-word`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ word }),
       });
-
       const data = await res.json();
-
-      setFilterWords(data.words || []);
+      setFilterSets(data.filter_sets || []);
     } catch (err) {
-      console.error("Error removing word:", err);
+      console.error("Error removing word from set:", err);
     }
   }
-
-  const visibleWords = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    if (!q) return filterWords;
-    return filterWords.filter((w) => w.toLowerCase().includes(q));
-  }, [filterWords, searchTerm]);
 
   return (
     <Card className="shadow-none">
       <CardHeader>
-        <CardTitle>Word Filter</CardTitle>
+        <CardTitle>Filter Sets</CardTitle>
         <CardDescription>
-          Add words you want automatically filtered.
+          Group filter words into sets, then enable or disable each set.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
           <Input
-            value={newWord}
-            onChange={(e) => setNewWord(e.target.value)}
+            value={newSetName}
+            onChange={(e) => setNewSetName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleAddWord();
+              if (e.key === "Enter") handleCreateSet();
             }}
-            placeholder="Enter word"
+            placeholder="New filter set name"
           />
-          <Button onClick={handleAddWord} className="gap-1.5">
+          <Button onClick={handleCreateSet} className="gap-1.5">
             <Plus className="w-4 h-4" />
-            Add
+            Add Set
           </Button>
         </div>
 
-        <Input
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search words..."
-        />
+        <div className="space-y-3">
+          {filterSets.map((filterSet) => {
+            const setWords = filterSet.words || [];
+            const query = (searchTermsBySet[filterSet.id] || "").trim().toLowerCase();
+            const visibleWords = query
+              ? setWords.filter((w) => w.toLowerCase().includes(query))
+              : setWords;
 
-        <div className="flex flex-wrap gap-2">
-          {visibleWords.map((word, index) => (
-            <Badge
-              key={`${word}-${index}`}
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {word}
-              <button
-                type="button"
-                onClick={() => handleRemoveWord(word)}
-                className="ml-1 text-xs hover:text-red-500"
-                aria-label={`Remove ${word}`}
+            return (
+              <details
+                key={filterSet.id}
+                className="rounded-md border bg-card"
+                open
               >
-                ✕
-              </button>
-            </Badge>
-          ))}
+                <summary className="cursor-pointer list-none px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="font-medium">{filterSet.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {setWords.length} words
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 text-sm">
+                        <span>Enabled</span>
+                        <Switch
+                          checked={!!filterSet.enabled}
+                          onCheckedChange={(checked) =>
+                            handleToggleSet(filterSet.id, checked)
+                          }
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </summary>
 
-          {visibleWords.length === 0 && (
-            <p className="text-sm text-muted-foreground">No matching words.</p>
+                <div className="space-y-3 border-t px-4 py-3">
+                  <Input
+                    value={searchTermsBySet[filterSet.id] || ""}
+                    onChange={(e) =>
+                      setSearchTermsBySet((prev) => ({
+                        ...prev,
+                        [filterSet.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Search words in this set..."
+                  />
+
+                  <div className="flex gap-2">
+                    <Input
+                      value={newWordsBySet[filterSet.id] || ""}
+                      onChange={(e) =>
+                        setNewWordsBySet((prev) => ({
+                          ...prev,
+                          [filterSet.id]: e.target.value,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddWord(filterSet.id);
+                      }}
+                      placeholder="Add word to this set"
+                    />
+                    <Button
+                      onClick={() => handleAddWord(filterSet.id)}
+                      className="gap-1.5"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {visibleWords.map((word, index) => (
+                      <Badge
+                        key={`${filterSet.id}-${word}-${index}`}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {word}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWord(filterSet.id, word)}
+                          className="ml-1 text-xs hover:text-red-500"
+                          aria-label={`Remove ${word}`}
+                        >
+                          x
+                        </button>
+                      </Badge>
+                    ))}
+
+                    {visibleWords.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        No matching words in this set.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </details>
+            );
+          })}
+
+          {filterSets.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No filter sets yet. Add your first set above.
+            </p>
           )}
         </div>
       </CardContent>

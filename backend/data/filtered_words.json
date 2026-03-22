@@ -1,0 +1,20 @@
+[
+  {
+    "id": "default",
+    "name": "Default",
+    "enabled": false,
+    "words": [
+      "hello",
+      "hey",
+      "test"
+    ]
+  },
+  {
+    "id": "14ee365f-3fd1-4040-a853-f92a0f55077e",
+    "name": "Hate Speech",
+    "enabled": false,
+    "words": [
+      "gross"
+    ]
+  }
+]
