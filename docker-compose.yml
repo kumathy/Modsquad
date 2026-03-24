@@ -12,5 +12,8 @@ services:
       - backend_uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
+      - HOME=/tmp
+      - HF_HOME=/tmp/.cache/huggingface
+      - MPLCONFIGDIR=/tmp/.config/matplotlib
 volumes:
   backend_uploads:
