@@ -15,6 +15,11 @@ dist-ssr
 __pycache__/
 *.pyc
 venv/
+build/
+*.spec.swp
+
+# Electron builder output
+release/
 
 # Uploaded videos go to this folder
 uploads/

@@ -11,20 +11,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function Settings() {
   const [filterSets, setFilterSets] = useState([]);
   const [newSetName, setNewSetName] = useState("");
   const [newWordsBySet, setNewWordsBySet] = useState({});
   const [searchTermsBySet, setSearchTermsBySet] = useState({});
-  const API_URL = "http://localhost:8000/settings";
+  const SETTINGS_URL = `${API_URL}/settings`;
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadInitialFilterSets() {
       try {
-        const res = await fetch(`${API_URL}/filter-sets`);
+        const res = await fetch(`${SETTINGS_URL}/filter-sets`);
         const data = await res.json();
         if (isMounted) {
           setFilterSets(data.filter_sets || []);
@@ -46,7 +47,7 @@ export default function Settings() {
     if (!trimmedName) return;
 
     try {
-      const res = await fetch(`${API_URL}/filter-sets`, {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,7 +64,7 @@ export default function Settings() {
 
   async function handleToggleSet(setId, enabled) {
     try {
-      const res = await fetch(`${API_URL}/filter-sets/${setId}/toggle`, {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets/${setId}/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +83,7 @@ export default function Settings() {
     if (!pendingWord) return;
 
     try {
-      const res = await fetch(`${API_URL}/filter-sets/${setId}/add-word`, {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets/${setId}/add-word`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +100,7 @@ export default function Settings() {
 
   async function handleRemoveWord(setId, word) {
     try {
-      const res = await fetch(`${API_URL}/filter-sets/${setId}/remove-word`, {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets/${setId}/remove-word`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 import { Play, Download, CheckCircle2, AlertCircle } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function ProcessedVideoCard({ video }) {
   return (
@@ -80,7 +81,7 @@ export default function ProcessedVideoCard({ video }) {
                 disabled={!video.downloadUrl}
               >
                 {video.downloadUrl ? (
-                  <a href={`http://localhost:8000${video.downloadUrl}`} download>
+                  <a href={`${API_URL}${video.downloadUrl}`} download>
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </a>

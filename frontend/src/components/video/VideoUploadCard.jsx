@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
-
-const API_URL = "http://localhost:8000";
+import { API_URL } from "@/config";
 
 export default function VideoUploadCard({
   onUploadStart,

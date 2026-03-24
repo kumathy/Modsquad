@@ -1,0 +1,119 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+          - os: ubuntu-latest
+            platform: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        working-directory: backend
+        run: |
+          pip install --no-cache-dir torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install --no-cache-dir -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install ffmpeg (Windows)
+        if: matrix.platform == 'win'
+        run: choco install ffmpeg -y
+
+      - name: Install ffmpeg (macOS)
+        if: matrix.platform == 'mac'
+        run: brew install ffmpeg
+
+      - name: Install ffmpeg (Linux)
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Build backend with PyInstaller
+        working-directory: backend
+        run: pyinstaller modsquad-backend.spec
+
+      - name: Bundle ffmpeg into backend (Windows)
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          Copy-Item (Get-Command ffmpeg).Source "backend/dist/modsquad-backend/"
+          Copy-Item (Get-Command ffprobe).Source "backend/dist/modsquad-backend/"
+
+      - name: Bundle ffmpeg into backend (macOS/Linux)
+        if: matrix.platform != 'win'
+        run: |
+          cp $(which ffmpeg) backend/dist/modsquad-backend/
+          cp $(which ffprobe) backend/dist/modsquad-backend/
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build Electron app (Windows)
+        if: matrix.platform == 'win'
+        working-directory: frontend
+        run: npx electron-builder --win
+
+      - name: Build Electron app (macOS)
+        if: matrix.platform == 'mac'
+        working-directory: frontend
+        run: npx electron-builder --mac
+
+      - name: Build Electron app (Linux)
+        if: matrix.platform == 'linux'
+        working-directory: frontend
+        run: npx electron-builder --linux
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: modsquad-${{ matrix.platform }}
+          path: |
+            frontend/release/*.exe
+            frontend/release/*.dmg
+            frontend/release/*.AppImage
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true

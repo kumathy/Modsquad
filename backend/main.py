@@ -4,6 +4,14 @@ from fastapi.responses import JSONResponse, FileResponse
 import shutil
 from pathlib import Path
 import logging
+import os
+import sys
+
+# When running as a PyInstaller bundle, add the bundle dir to PATH
+# so that bundled ffmpeg and other binaries are found.
+if getattr(sys, "frozen", False):
+    bundle_dir = Path(sys._MEIPASS)
+    os.environ["PATH"] = str(bundle_dir) + os.pathsep + os.environ.get("PATH", "")
 
 from utils.transcribe import transcribe_audio
 from utils.settings import router as settings_router
@@ -19,21 +27,16 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="ModSquad API", version="1.0.0")
 
-origins = [
-    "http://localhost:5173",
-    "localhost:5173"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR = Path(os.environ.get("UPLOAD_DIR", "uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".mp4", ".mov", ".avi", ".mp3", ".wav", ".m4a"}
 
@@ -108,3 +111,8 @@ async def download_file(filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path=str(file_path), filename=filename, media_type="video/mp4")
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("MODSQUAD_PORT", "8000"))
+    uvicorn.run(app, host="127.0.0.1", port=port)
