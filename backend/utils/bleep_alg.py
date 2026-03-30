@@ -16,7 +16,8 @@ def make_censor_bleep(duration=0.3, freq=1000, volume=0.8, fps=44100):
 def bleep_video(input_path,
                 output_path,
                 intervals,
-                use_bleep=True):
+                use_bleep=True,
+                buffer=0.0):          # <-- new parameter
     
     video = VideoFileClip(input_path)
     original_audio = video.audio
@@ -38,8 +39,14 @@ def bleep_video(input_path,
         )
         video.close()
         return
-    ivals = sorted([list(pair) for pair in intervals])
 
+    # Apply buffer before merging so overlapping buffers collapse naturally
+    buffered = [
+        [max(0.0, s - buffer), min(total_duration, e + buffer)]
+        for s, e in intervals
+    ]
+
+    ivals = sorted(buffered)
     merged = []
     for curr in ivals:
         if not merged or merged[-1][1] < curr[0]:
@@ -51,8 +58,8 @@ def bleep_video(input_path,
     last_end = 0.0
 
     for start, end in merged:
-        if start < 0 or end > total_duration or start >= end:
-            print(f"Warning: skipping invalid interval [{start}, {end}]")
+        if start >= end:                       # buffer clamp can make start == end
+            print(f"Warning: skipping zero-length interval [{start}, {end}]")
             continue
         if start > last_end:
             pieces.append(original_audio.subclipped(last_end, start))
@@ -70,7 +77,7 @@ def bleep_video(input_path,
     
     for i, p in enumerate(pieces):
         ch = p.nchannels if hasattr(p, 'nchannels') else '?'
-        print(f"Piece {i:2d}: duration={p.duration:6.2f}s channels={ch}")\
+        print(f"Piece {i:2d}: duration={p.duration:6.2f}s channels={ch}")
         
     final_audio = concatenate_audioclips(pieces)
     final_video = video.with_audio(final_audio)
@@ -79,9 +86,7 @@ def bleep_video(input_path,
         str(output_path),
         codec="libx264",
         audio_codec="aac",
-        ffmpeg_params=[
-        "-crf", "18",
-        "-vf", "fps=30"],
+        ffmpeg_params=["-crf", "18", "-vf", "fps=30"],
         temp_audiofile="temp-audio.m4a",
         remove_temp=True,
         preset="medium",
@@ -90,9 +95,9 @@ def bleep_video(input_path,
 
     video.close()
     final_video.close()
-"""
+'''
 input_video = SCRIPT_DIR / "fixed_input.mp4"
-output_video = SCRIPT_DIR / "output_beep_test02.mp4"
+output_video = SCRIPT_DIR / "output_beep_test03.mp4"
 
 censor_intervals = [
     (19.0, 19.5),
@@ -104,5 +109,6 @@ bleep_video(
     str(output_video),
     intervals=censor_intervals,
     use_bleep=True,
+    buffer=0.1,
 )
-"""
+'''
