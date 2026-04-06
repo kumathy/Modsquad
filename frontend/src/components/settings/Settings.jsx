@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { API_URL } from "@/config";
 
 export default function Settings() {
@@ -18,29 +18,38 @@ export default function Settings() {
   const [newSetName, setNewSetName] = useState("");
   const [newWordsBySet, setNewWordsBySet] = useState({});
   const [searchTermsBySet, setSearchTermsBySet] = useState({});
+  const [audioBufferSeconds, setAudioBufferSeconds] = useState("0");
+  const [isSavingBuffer, setIsSavingBuffer] = useState(false);
   const SETTINGS_URL = `${API_URL}/settings`;
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadInitialFilterSets() {
+    async function loadInitialSettings() {
       try {
-        const res = await fetch(`${SETTINGS_URL}/filter-sets`);
-        const data = await res.json();
+        const [filterSetsRes, audioSettingsRes] = await Promise.all([
+          fetch(`${SETTINGS_URL}/filter-sets`),
+          fetch(`${SETTINGS_URL}/audio-processing`),
+        ]);
+
+        const filterSetsData = await filterSetsRes.json();
+        const audioSettingsData = await audioSettingsRes.json();
+
         if (isMounted) {
-          setFilterSets(data.filter_sets || []);
+          setFilterSets(filterSetsData.filter_sets || []);
+          setAudioBufferSeconds(String(audioSettingsData.buffer_seconds ?? 0));
         }
       } catch (err) {
-        console.error("Error loading filter sets:", err);
+        console.error("Error loading settings:", err);
       }
     }
 
-    loadInitialFilterSets();
+    loadInitialSettings();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [SETTINGS_URL]);
 
   async function handleCreateSet() {
     const trimmedName = newSetName.trim();
@@ -114,16 +123,101 @@ export default function Settings() {
     }
   }
 
+  async function handleDeleteSet(setId) {
+    try {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets/${setId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to delete filter set");
+      }
+
+      setFilterSets(data.filter_sets || []);
+      setNewWordsBySet((prev) => {
+        const next = { ...prev };
+        delete next[setId];
+        return next;
+      });
+      setSearchTermsBySet((prev) => {
+        const next = { ...prev };
+        delete next[setId];
+        return next;
+      });
+    } catch (err) {
+      console.error("Error deleting filter set:", err);
+    }
+  }
+
+  async function handleSaveAudioBuffer() {
+    const parsedBuffer = Number(audioBufferSeconds);
+    if (Number.isNaN(parsedBuffer) || parsedBuffer < 0) return;
+
+    try {
+      setIsSavingBuffer(true);
+      const res = await fetch(`${SETTINGS_URL}/audio-processing`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ buffer_seconds: parsedBuffer }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to save audio buffer setting");
+      }
+
+      setAudioBufferSeconds(String(data.buffer_seconds ?? parsedBuffer));
+    } catch (err) {
+      console.error("Error updating audio buffer setting:", err);
+    } finally {
+      setIsSavingBuffer(false);
+    }
+  }
+
   return (
-    <Card className="shadow-none">
-      <CardHeader>
-        <CardTitle>Filter Sets</CardTitle>
-        <CardDescription>
-          Group filter words into sets, then enable or disable each set.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-2">
+    <div className="space-y-4">
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle>Audio Processing</CardTitle>
+          <CardDescription>
+            Configure processing delay around detected words.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-sm font-medium">Buffer (seconds)</p>
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              min="0"
+              step="0.05"
+              value={audioBufferSeconds}
+              onChange={(e) => setAudioBufferSeconds(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveAudioBuffer();
+              }}
+              placeholder="0.0"
+            />
+            <Button onClick={handleSaveAudioBuffer} disabled={isSavingBuffer}>
+              {isSavingBuffer ? "Saving..." : "Save"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Adds extra time before and after flagged words when muting/bleeping audio.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle>Filter Sets</CardTitle>
+          <CardDescription>
+            Group filter words into sets, then enable or disable each set.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
           <Input
             value={newSetName}
             onChange={(e) => setNewSetName(e.target.value)}
@@ -161,6 +255,20 @@ export default function Settings() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteSet(filterSet.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </Button>
                       <label className="flex items-center gap-2 text-sm">
                         <span>Enabled</span>
                         <Switch
@@ -244,8 +352,9 @@ export default function Settings() {
               No filter sets yet. Add your first set above.
             </p>
           )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
