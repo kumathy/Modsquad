@@ -42,6 +42,9 @@ def load_filter_sets() -> List[dict]:
             data = json.load(f)
 
         if isinstance(data, list):
+            if len(data) == 0:
+                return []
+
             # Backward compatibility: old format stored a plain word list.
             if all(isinstance(item, str) for item in data):
                 words = [str(w).strip().lower() for w in data if str(w).strip()]
@@ -84,16 +87,6 @@ def save_filter_sets(filter_sets: List[dict]) -> None:
         if not isinstance(item, dict):
             continue
         normalized_sets.append(_normalize_set(item, f"set-{idx + 1}"))
-
-    if not normalized_sets:
-        normalized_sets = [
-            {
-                "id": DEFAULT_SET_ID,
-                "name": "Default",
-                "enabled": True,
-                "words": [],
-            }
-        ]
 
     with open(WORDS_FILE, "w", encoding="utf-8") as f:
         json.dump(normalized_sets, f, ensure_ascii=False, indent=2)

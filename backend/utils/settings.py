@@ -1,3 +1,6 @@
+import json
+import os
+
 from fastapi import APIRouter
 from fastapi import HTTPException
 from pydantic import BaseModel
@@ -11,6 +14,58 @@ from utils.store_filter_words import (
 
 router = APIRouter()
 
+DATA_DIR = os.getenv("DATA_DIR", "data")
+AUDIO_SETTINGS_FILE = os.path.join(DATA_DIR, "audio_settings.json")
+
+
+def _ensure_data_dir() -> None:
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def _normalize_buffer_seconds(value: float | int | str | None) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        parsed = 0.0
+
+    if parsed < 0:
+        parsed = 0.0
+    if parsed > 5:
+        parsed = 5.0
+
+    return round(parsed, 3)
+
+
+def load_audio_processing_settings() -> dict:
+    _ensure_data_dir()
+
+    if not os.path.exists(AUDIO_SETTINGS_FILE):
+        return {"buffer_seconds": 0.0}
+
+    try:
+        with open(AUDIO_SETTINGS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return {"buffer_seconds": 0.0}
+        return {
+            "buffer_seconds": _normalize_buffer_seconds(data.get("buffer_seconds", 0.0))
+        }
+    except Exception:
+        return {"buffer_seconds": 0.0}
+
+
+def save_audio_processing_settings(buffer_seconds: float) -> dict:
+    _ensure_data_dir()
+    normalized = {"buffer_seconds": _normalize_buffer_seconds(buffer_seconds)}
+    with open(AUDIO_SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(normalized, f, ensure_ascii=False, indent=2)
+    return normalized
+
+
+def get_audio_buffer_seconds() -> float:
+    settings = load_audio_processing_settings()
+    return settings["buffer_seconds"]
+
 class WordRequest(BaseModel):
     word: str
 
@@ -20,6 +75,10 @@ class SetRequest(BaseModel):
 
 class ToggleRequest(BaseModel):
     enabled: bool
+
+
+class AudioProcessingSettingsRequest(BaseModel):
+    buffer_seconds: float
 
 
 def _find_filter_set(filter_sets: list[dict], set_id: str) -> dict:
@@ -62,6 +121,16 @@ def toggle_filter_set(set_id: str, data: ToggleRequest):
     return {"success": True, "filter_sets": filter_sets}
 
 
+@router.delete("/filter-sets/{set_id}")
+def delete_filter_set(set_id: str):
+    filter_sets = load_filter_sets()
+    _find_filter_set(filter_sets, set_id)
+
+    remaining_sets = [s for s in filter_sets if s.get("id") != set_id]
+    save_filter_sets(remaining_sets)
+    return {"success": True, "filter_sets": remaining_sets}
+
+
 @router.post("/filter-sets/{set_id}/add-word")
 def add_word_to_set(set_id: str, data: WordRequest):
     word = data.word.strip().lower()
@@ -92,6 +161,22 @@ def remove_word_from_set(set_id: str, data: WordRequest):
         save_filter_sets(filter_sets)
 
     return {"success": True, "filter_sets": filter_sets}
+
+
+@router.get("/audio-processing")
+def get_audio_processing_settings_endpoint():
+    return load_audio_processing_settings()
+
+
+@router.post("/audio-processing")
+def update_audio_processing_settings_endpoint(data: AudioProcessingSettingsRequest):
+    if data.buffer_seconds < 0:
+        raise HTTPException(status_code=400, detail="buffer_seconds must be >= 0")
+
+    return {
+        "success": True,
+        **save_audio_processing_settings(data.buffer_seconds),
+    }
 
 
 # Backward-compatible endpoints

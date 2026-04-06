@@ -15,6 +15,7 @@ if getattr(sys, "frozen", False):
 
 from utils.transcribe import transcribe_audio
 from utils.settings import router as settings_router
+from utils.settings import get_audio_buffer_seconds
 from utils.bleep_alg import bleep_video
 from utils.find_words import updated_find_word_matches
 from utils.store_filter_words import load_words
@@ -76,8 +77,15 @@ async def process_vod(file: UploadFile = File(...)):
         logger.info(f"[Filter] {len(matches)} words matched from {len(filtered_words)} filter words")
 
         output_path = file_path.with_suffix(".censored.mp4")
+        buffer_seconds = get_audio_buffer_seconds()
         logger.info("[Censor] Generating censored video...")
-        bleep_video(str(file_path), str(output_path), timestamps, use_bleep=True)
+        bleep_video(
+            str(file_path),
+            str(output_path),
+            timestamps,
+            use_bleep=True,
+            buffer=buffer_seconds,
+        )
         logger.info(f"[Censor] Done - saved to {output_path.name}")
 
         # Return results
