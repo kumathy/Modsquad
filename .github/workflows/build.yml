@@ -60,14 +60,14 @@ jobs:
         if: matrix.platform == 'win'
         shell: pwsh
         run: |
-          Copy-Item (Get-Command ffmpeg).Source "backend/dist/modsquad-backend/"
-          Copy-Item (Get-Command ffprobe).Source "backend/dist/modsquad-backend/"
+          Copy-Item (Get-Command ffmpeg).Source "backend/dist/modsquad-backend/_internal/"
+          Copy-Item (Get-Command ffprobe).Source "backend/dist/modsquad-backend/_internal/"
 
       - name: Bundle ffmpeg into backend (macOS/Linux)
         if: matrix.platform != 'win'
         run: |
-          cp $(which ffmpeg) backend/dist/modsquad-backend/
-          cp $(which ffprobe) backend/dist/modsquad-backend/
+          cp $(which ffmpeg) backend/dist/modsquad-backend/_internal/
+          cp $(which ffprobe) backend/dist/modsquad-backend/_internal/
 
       - name: Install frontend dependencies
         working-directory: frontend
