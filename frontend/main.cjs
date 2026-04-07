@@ -12,9 +12,9 @@ function getBackendPath() {
 
   const backendDir = path.join(process.resourcesPath, "backend");
   if (process.platform === "win32") {
-    return path.join(backendDir, "modsquad-backend", "modsquad-backend.exe");
+    return path.join(backendDir, "modsquad-backend.exe");
   }
-  return path.join(backendDir, "modsquad-backend", "modsquad-backend");
+  return path.join(backendDir, "modsquad-backend");
 }
 
 function startBackend() {
