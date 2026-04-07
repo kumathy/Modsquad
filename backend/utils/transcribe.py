@@ -9,7 +9,7 @@ def get_best_device():
         return "cpu"
 DEVICE=get_best_device()
 COMPUTE_TYPE="float16" if DEVICE!="cpu" else "int8"
-MODEL_SIZE="medium.en"
+MODEL_SIZE="large-v3"
 logger.info("Loading Whisper model...")
 model = whisperx.load_model(
     MODEL_SIZE,
