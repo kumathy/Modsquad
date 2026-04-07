@@ -12,6 +12,8 @@ import sys
 if getattr(sys, "frozen", False):
     bundle_dir = Path(sys._MEIPASS)
     os.environ["PATH"] = str(bundle_dir) + os.pathsep + os.environ.get("PATH", "")
+    import certifi
+    os.environ["SSL_CERT_FILE"] = certifi.where()
 
 from utils.transcribe import transcribe_audio
 from utils.settings import router as settings_router
