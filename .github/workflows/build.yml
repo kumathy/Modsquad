@@ -52,6 +52,9 @@ jobs:
         if: matrix.platform == 'linux'
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
+      - name: Download NLTK data
+        run: python -c "import nltk; nltk.download('punkt_tab', download_dir='backend/nltk_data')"
+
       - name: Build backend with PyInstaller
         working-directory: backend
         run: pyinstaller modsquad-backend.spec

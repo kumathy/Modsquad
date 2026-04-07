@@ -4,7 +4,7 @@ from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
-extra_datas = []
+extra_datas = [('nltk_data', 'nltk_data')]
 extra_binaries = []
 extra_hiddenimports = [
     'uvicorn.logging',
