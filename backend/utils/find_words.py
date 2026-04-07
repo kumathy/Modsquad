@@ -1,5 +1,7 @@
 import re
 
+def strip_punctuation(word):
+    return re.sub(r'[^\w]', '', word)
 
 def find_word_matches(plaintext, wordlist):
     with open(wordlist, 'r', encoding='utf-8') as f:
@@ -33,7 +35,7 @@ def updated_find_word_matches(text, word_list):
     timestamps = []
 
     for start, end, word in text:
-        clean_word = word.lower()
+        clean_word = strip_punctuation(word).lower()
         if clean_word in words:
             matches.append((clean_word, start, end))
             timestamps.append((start, end))
