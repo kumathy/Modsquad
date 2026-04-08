@@ -66,6 +66,7 @@ export default function VideoUploadCard({
       console.log("Processing complete:", data);
 
       // Update to completed
+      toast.success("Video processed successfully");
       onUploadComplete(data, videoId);
 
       // Reset form
