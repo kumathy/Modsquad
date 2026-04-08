@@ -7,9 +7,11 @@ from pydantic import BaseModel
 from uuid import uuid4
 from utils.store_filter_words import (
     DEFAULT_SET_ID,
+    DEFAULT_SET_IDS,
     load_filter_sets,
     save_filter_sets,
     get_enabled_words,
+    get_default_words,
 )
 
 router = APIRouter()
@@ -123,12 +125,27 @@ def toggle_filter_set(set_id: str, data: ToggleRequest):
 
 @router.delete("/filter-sets/{set_id}")
 def delete_filter_set(set_id: str):
+    if set_id in DEFAULT_SET_IDS:
+        raise HTTPException(status_code=400, detail="Cannot delete a default filter set")
+
     filter_sets = load_filter_sets()
     _find_filter_set(filter_sets, set_id)
 
     remaining_sets = [s for s in filter_sets if s.get("id") != set_id]
     save_filter_sets(remaining_sets)
     return {"success": True, "filter_sets": remaining_sets}
+
+
+@router.post("/filter-sets/{set_id}/reset")
+def reset_filter_set(set_id: str):
+    if set_id not in DEFAULT_SET_IDS:
+        raise HTTPException(status_code=400, detail="Only default filter sets can be reset")
+
+    filter_sets = load_filter_sets()
+    target_set = _find_filter_set(filter_sets, set_id)
+    target_set["words"] = get_default_words(set_id)
+    save_filter_sets(filter_sets)
+    return {"success": True, "filter_sets": filter_sets}
 
 
 @router.post("/filter-sets/{set_id}/add-word")

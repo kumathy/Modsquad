@@ -6,6 +6,48 @@ DATA_DIR = os.getenv("DATA_DIR", "data")
 WORDS_FILE = os.path.join(DATA_DIR, "filtered_words.json")
 DEFAULT_SET_ID = "default"
 
+DEFAULT_FILTER_SETS = [
+    {
+        "id": "common-profanity",
+        "name": "Common Profanity",
+        "enabled": True,
+        "isDefault": True,
+        "words": [
+            "ass", "asshole", "arsehole", "bastard", "bitch", "bloody",
+            "bollocks", "bullshit", "cock", "crap", "cunt", "damn",
+            "dick", "dingleberry", "dogshit", "fuck", "fucking",
+            "fucker", "fuckhead", "fucktard", "fuckwit", "goddamn",
+            "hell", "horseshit", "jackass", "motherfucker", "piss",
+            "pissed", "prick", "pussy", "shit", "shitty", "shithead",
+            "slut", "son of a bitch", "tits", "tosser", "twat",
+            "wanker", "whore",
+        ],
+    },
+    {
+        "id": "slurs-hate-speech",
+        "name": "Slurs & Hate Speech",
+        "enabled": True,
+        "isDefault": True,
+        "words": [
+            "beaner", "chink", "coon", "cracker", "darkie", "dyke",
+            "fag", "faggot", "gook", "gringo", "hajji", "honkey",
+            "jap", "jigaboo", "kike", "kraut", "lesbo", "negro",
+            "nigga", "nigger", "paki", "raghead", "retard", "spastic",
+            "spic", "towelhead", "tranny", "wetback", "wigger",
+            "zipperhead",
+        ],
+    },
+]
+
+DEFAULT_SET_IDS = {s["id"] for s in DEFAULT_FILTER_SETS}
+
+
+def get_default_words(set_id: str) -> List[str]:
+    for s in DEFAULT_FILTER_SETS:
+        if s["id"] == set_id:
+            return list(s["words"])
+    return []
+
 
 def ensure_data_dir() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -15,27 +57,27 @@ def _normalize_set(raw_set: dict, fallback_id: str) -> dict:
     set_id = str(raw_set.get("id") or fallback_id)
     name = str(raw_set.get("name") or "New Set").strip() or "New Set"
     enabled = bool(raw_set.get("enabled", True))
+    is_default = set_id in DEFAULT_SET_IDS
     words = [str(w).strip().lower() for w in raw_set.get("words", []) if str(w).strip()]
     unique_words = list(dict.fromkeys(words))
-    return {
+    result = {
         "id": set_id,
         "name": name,
         "enabled": enabled,
         "words": unique_words,
     }
+    if is_default:
+        result["isDefault"] = True
+    return result
 
 
 def load_filter_sets() -> List[dict]:
     ensure_data_dir()
     if not os.path.exists(WORDS_FILE):
-        return [
-            {
-                "id": DEFAULT_SET_ID,
-                "name": "Default",
-                "enabled": True,
-                "words": [],
-            }
-        ]
+        import copy
+        defaults = copy.deepcopy(DEFAULT_FILTER_SETS)
+        save_filter_sets(defaults)
+        return defaults
 
     try:
         with open(WORDS_FILE, "r", encoding="utf-8") as f:
@@ -70,14 +112,8 @@ def load_filter_sets() -> List[dict]:
     except Exception:
         pass
 
-    return [
-        {
-            "id": DEFAULT_SET_ID,
-            "name": "Default",
-            "enabled": True,
-            "words": [],
-        }
-    ]
+    import copy
+    return copy.deepcopy(DEFAULT_FILTER_SETS)
 
 
 def save_filter_sets(filter_sets: List[dict]) -> None:

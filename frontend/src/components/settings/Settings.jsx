@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, RotateCcw } from "lucide-react";
 import { API_URL } from "@/config";
 
 export default function Settings() {
@@ -20,7 +20,13 @@ export default function Settings() {
   const [searchTermsBySet, setSearchTermsBySet] = useState({});
   const [audioBufferSeconds, setAudioBufferSeconds] = useState("0");
   const [isSavingBuffer, setIsSavingBuffer] = useState(false);
+  const [censorWords, setCensorWords] = useState(true);
   const SETTINGS_URL = `${API_URL}/settings`;
+
+  function censorWord(word) {
+    if (!censorWords || word.length <= 2) return word;
+    return word[0] + "*".repeat(word.length - 2) + word[word.length - 1];
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -149,6 +155,18 @@ export default function Settings() {
     }
   }
 
+  async function handleResetSet(setId) {
+    try {
+      const res = await fetch(`${SETTINGS_URL}/filter-sets/${setId}/reset`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      setFilterSets(data.filter_sets || []);
+    } catch (err) {
+      console.error("Error resetting filter set:", err);
+    }
+  }
+
   async function handleSaveAudioBuffer() {
     const parsedBuffer = Number(audioBufferSeconds);
     if (Number.isNaN(parsedBuffer) || parsedBuffer < 0) return;
@@ -211,10 +229,21 @@ export default function Settings() {
 
       <Card className="shadow-none">
         <CardHeader>
-          <CardTitle>Filter Sets</CardTitle>
-          <CardDescription>
-            Group filter words into sets, then enable or disable each set.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Filter Sets</CardTitle>
+              <CardDescription>
+                Group filter words into sets, then enable or disable each set.
+              </CardDescription>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <span>Censor words</span>
+              <Switch
+                checked={censorWords}
+                onCheckedChange={setCensorWords}
+              />
+            </label>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -255,20 +284,40 @@ export default function Settings() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDeleteSet(filterSet.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </Button>
+                      {filterSet.isDefault ? (
+                        <>
+                          <Badge variant="outline">Default</Badge>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleResetSet(filterSet.id);
+                            }}
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                            Reset
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteSet(filterSet.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </Button>
+                      )}
                       <label className="flex items-center gap-2 text-sm">
                         <span>Enabled</span>
                         <Switch
@@ -324,7 +373,7 @@ export default function Settings() {
                         variant="secondary"
                         className="flex items-center gap-1"
                       >
-                        {word}
+                        {censorWord(word)}
                         <button
                           type="button"
                           onClick={() => handleRemoveWord(filterSet.id, word)}
