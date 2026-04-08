@@ -128,8 +128,8 @@ app.whenReady().then(async () => {
 app.on("before-quit", killBackend);
 
 app.on("window-all-closed", () => {
-  killBackend();
   if (process.platform !== "darwin") {
+    killBackend();
     app.quit();
   }
 });
