@@ -6,6 +6,7 @@ const fs = require("fs");
 
 const isDev = !app.isPackaged;
 let backendProcess = null;
+let backendPort = null;
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -43,12 +44,20 @@ function startBackend() {
       DATA_DIR: dataDir,
       HF_HOME: hfHome,
       MPLCONFIGDIR: path.join(userDataPath, "matplotlib"),
+      MODSQUAD_PORT: "0",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
 
   child.stdout.on("data", (d) => console.log("[backend]", d.toString()));
-  child.stderr.on("data", (d) => console.error("[backend]", d.toString()));
+  child.stderr.on("data", (d) => {
+    const text = d.toString();
+    console.error("[backend]", text);
+    const match = text.match(/Uvicorn running on http:\/\/[\d.]+:(\d+)/);
+    if (match) {
+      backendPort = parseInt(match[1], 10);
+    }
+  });
 
   child.on("error", (err) => {
     console.error("Failed to start backend:", err);
@@ -66,7 +75,11 @@ function waitForBackend(timeoutMs = 120000) {
         return reject(new Error("Backend failed to start within timeout"));
       }
 
-      const req = http.get("http://localhost:8000/", (res) => {
+      if (!backendPort) {
+        return setTimeout(poll, 500);
+      }
+
+      const req = http.get(`http://localhost:${backendPort}/`, (res) => {
         resolve();
       });
       req.on("error", () => {
@@ -94,7 +107,9 @@ async function createWindow() {
   if (isDev) {
     win.loadURL("http://localhost:5173");
   } else {
-    win.loadFile(path.join(__dirname, "dist", "index.html"));
+    win.loadFile(path.join(__dirname, "dist", "index.html"), {
+      query: { port: String(backendPort) },
+    });
   }
 }
 
