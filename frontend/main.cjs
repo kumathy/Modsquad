@@ -7,6 +7,11 @@ const fs = require("fs");
 const isDev = !app.isPackaged;
 let backendProcess = null;
 
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
+
 function getBackendPath() {
   if (isDev) return null;
 
@@ -92,6 +97,14 @@ async function createWindow() {
     win.loadFile(path.join(__dirname, "dist", "index.html"));
   }
 }
+
+app.on("second-instance", () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.focus();
+  }
+});
 
 app.whenReady().then(async () => {
   if (!isDev) {
