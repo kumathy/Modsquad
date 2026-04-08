@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import SplashScreen from "@/components/SplashScreen";
 import VideoProcessor from "@/components/video/VideoProcessor";
 import StreamProcessor from "@/components/stream/StreamProcessor";
 import Settings from "@/components/settings/Settings";
@@ -13,6 +14,12 @@ import { Film, Radio, Settings2 } from "lucide-react";
 
 export default function App() {
   const [processedVideos, setProcessedVideos] = useState([]);
+  const [backendReady, setBackendReady] = useState(false);
+  const handleReady = useCallback(() => setBackendReady(true), []);
+
+  if (!backendReady) {
+    return <SplashScreen onReady={handleReady} />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
