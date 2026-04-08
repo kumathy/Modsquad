@@ -79,8 +79,8 @@ jobs:
           DEST="backend/dist/modsquad-backend/_internal"
           cp $(which ffmpeg) "$DEST/"
           cp $(which ffprobe) "$DEST/"
-          dylibbundler -of -cd -b -x "$DEST/ffmpeg" -d "$DEST/libs/" -p @loader_path/libs/
-          dylibbundler -of -cd -b -x "$DEST/ffprobe" -d "$DEST/libs/" -p @loader_path/libs/
+          dylibbundler -of -cd -b -x "$DEST/ffmpeg" -d "$DEST/" -p @loader_path/
+          dylibbundler -of -cd -b -x "$DEST/ffprobe" -d "$DEST/" -p @loader_path/
 
       - name: Install frontend dependencies
         working-directory: frontend
