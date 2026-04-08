@@ -72,9 +72,9 @@ def _normalize_set(raw_set: dict, fallback_id: str) -> dict:
 
 
 def load_filter_sets() -> List[dict]:
+    import copy
     ensure_data_dir()
     if not os.path.exists(WORDS_FILE):
-        import copy
         defaults = copy.deepcopy(DEFAULT_FILTER_SETS)
         save_filter_sets(defaults)
         return defaults
@@ -107,12 +107,20 @@ def load_filter_sets() -> List[dict]:
                 normalized_sets.append(_normalize_set(item, f"set-{idx + 1}"))
 
             if normalized_sets:
+                # Ensure default sets are present
+                existing_ids = {s["id"] for s in normalized_sets}
+                missing_defaults = [
+                    copy.deepcopy(d) for d in DEFAULT_FILTER_SETS
+                    if d["id"] not in existing_ids
+                ]
+                if missing_defaults:
+                    normalized_sets = missing_defaults + normalized_sets
+                    save_filter_sets(normalized_sets)
                 return normalized_sets
 
     except Exception:
         pass
 
-    import copy
     return copy.deepcopy(DEFAULT_FILTER_SETS)
 
 
