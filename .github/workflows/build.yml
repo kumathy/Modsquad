@@ -63,8 +63,9 @@ jobs:
         if: matrix.platform == 'win'
         shell: pwsh
         run: |
-          Copy-Item (Get-Command ffmpeg).Source "backend/dist/modsquad-backend/_internal/"
-          Copy-Item (Get-Command ffprobe).Source "backend/dist/modsquad-backend/_internal/"
+          $ffmpegDir = Join-Path $env:ChocolateyInstall "lib\ffmpeg\tools\ffmpeg\bin"
+          Copy-Item "$ffmpegDir\ffmpeg.exe" "backend/dist/modsquad-backend/_internal/"
+          Copy-Item "$ffmpegDir\ffprobe.exe" "backend/dist/modsquad-backend/_internal/"
 
       - name: Bundle ffmpeg into backend (Linux)
         if: matrix.platform == 'linux'
