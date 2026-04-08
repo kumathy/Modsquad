@@ -84,14 +84,13 @@ def load_filter_sets() -> List[dict]:
             data = json.load(f)
 
         if isinstance(data, list):
-            if len(data) == 0:
-                return []
+            normalized_sets = []
 
             # Backward compatibility: old format stored a plain word list.
-            if all(isinstance(item, str) for item in data):
+            if data and all(isinstance(item, str) for item in data):
                 words = [str(w).strip().lower() for w in data if str(w).strip()]
                 unique_words = list(dict.fromkeys(words))
-                return [
+                normalized_sets = [
                     {
                         "id": DEFAULT_SET_ID,
                         "name": "Default",
@@ -99,24 +98,22 @@ def load_filter_sets() -> List[dict]:
                         "words": unique_words,
                     }
                 ]
+            else:
+                for idx, item in enumerate(data):
+                    if not isinstance(item, dict):
+                        continue
+                    normalized_sets.append(_normalize_set(item, f"set-{idx + 1}"))
 
-            normalized_sets = []
-            for idx, item in enumerate(data):
-                if not isinstance(item, dict):
-                    continue
-                normalized_sets.append(_normalize_set(item, f"set-{idx + 1}"))
-
-            if normalized_sets:
-                # Ensure default sets are present
-                existing_ids = {s["id"] for s in normalized_sets}
-                missing_defaults = [
-                    copy.deepcopy(d) for d in DEFAULT_FILTER_SETS
-                    if d["id"] not in existing_ids
-                ]
-                if missing_defaults:
-                    normalized_sets = missing_defaults + normalized_sets
-                    save_filter_sets(normalized_sets)
-                return normalized_sets
+            # Ensure default sets are present
+            existing_ids = {s["id"] for s in normalized_sets}
+            missing_defaults = [
+                copy.deepcopy(d) for d in DEFAULT_FILTER_SETS
+                if d["id"] not in existing_ids
+            ]
+            if missing_defaults:
+                normalized_sets = missing_defaults + normalized_sets
+                save_filter_sets(normalized_sets)
+            return normalized_sets
 
     except Exception:
         pass
