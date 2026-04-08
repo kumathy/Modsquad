@@ -66,11 +66,21 @@ jobs:
           Copy-Item (Get-Command ffmpeg).Source "backend/dist/modsquad-backend/_internal/"
           Copy-Item (Get-Command ffprobe).Source "backend/dist/modsquad-backend/_internal/"
 
-      - name: Bundle ffmpeg into backend (macOS/Linux)
-        if: matrix.platform != 'win'
+      - name: Bundle ffmpeg into backend (Linux)
+        if: matrix.platform == 'linux'
         run: |
           cp $(which ffmpeg) backend/dist/modsquad-backend/_internal/
           cp $(which ffprobe) backend/dist/modsquad-backend/_internal/
+
+      - name: Bundle ffmpeg into backend (macOS)
+        if: matrix.platform == 'mac'
+        run: |
+          brew install dylibbundler
+          DEST="backend/dist/modsquad-backend/_internal"
+          cp $(which ffmpeg) "$DEST/"
+          cp $(which ffprobe) "$DEST/"
+          dylibbundler -of -b -x "$DEST/ffmpeg" -d "$DEST/libs/" -p @loader_path/libs/
+          dylibbundler -of -b -x "$DEST/ffprobe" -d "$DEST/libs/" -p @loader_path/libs/
 
       - name: Install frontend dependencies
         working-directory: frontend
