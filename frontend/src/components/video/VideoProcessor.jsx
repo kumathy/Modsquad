@@ -36,10 +36,10 @@ export default function VideoProcessor({ processedVideos, setProcessedVideos }) 
     );
   }
 
-  function handleUploadProgress(progress, videoId) {
+  function handleUploadProgress(progress, videoId, stage) {
     setProcessedVideos((prevVideos) =>
       prevVideos.map((video) =>
-        video.id === videoId ? { ...video, progress } : video
+        video.id === videoId ? { ...video, progress, stage } : video
       )
     );
   }

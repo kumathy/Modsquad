@@ -41,42 +41,58 @@ export default function VideoUploadCard({
     formData.append("file", file);
 
     try {
-      // Simulate progress
-      let currentProgress = 0;
-      const progressInterval = setInterval(() => {
-        if (currentProgress < 90) {
-          currentProgress = Math.min(currentProgress + 10, 90);
-          onUploadProgress(currentProgress, videoId);
-        }
-      }, 1000);
-
+      // Upload file and get job ID
+      onUploadProgress(5, videoId, "Uploading...");
       const response = await fetch(`${API_URL}/process-video`, {
         method: "POST",
         body: formData,
       });
 
-      clearInterval(progressInterval);
-
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Processing failed");
+        throw new Error(errorData.detail || "Upload failed");
       }
 
-      const data = await response.json();
-      console.log("Processing complete:", data);
+      const { job_id } = await response.json();
+      onUploadProgress(10, videoId, "Starting processing...");
 
-      // Update to completed
-      toast.success("Video processed successfully");
-      onUploadComplete(data, videoId);
+      // Listen for processing progress via SSE
+      await new Promise((resolve, reject) => {
+        const es = new EventSource(`${API_URL}/process-video/${job_id}/progress`);
 
-      // Reset form
-      setFile(null);
-      const input = document.getElementById("video-upload");
-      if (input) input.value = "";
+        es.addEventListener("progress", (e) => {
+          const { progress, stage } = JSON.parse(e.data);
+          const labels = {
+            transcribing: "Transcribing audio...",
+            filtering: "Filtering words...",
+            censoring: "Censoring video...",
+          };
+          onUploadProgress(progress, videoId, labels[stage] || stage);
+        });
+
+        es.addEventListener("complete", (e) => {
+          es.close();
+          const data = JSON.parse(e.data);
+          toast.success("Video processed successfully");
+          onUploadComplete(data, videoId);
+          setFile(null);
+          const input = document.getElementById("video-upload");
+          if (input) input.value = "";
+          resolve();
+        });
+
+        es.addEventListener("error", (e) => {
+          es.close();
+          try {
+            const { detail } = JSON.parse(e.data);
+            reject(new Error(detail));
+          } catch {
+            reject(new Error("Processing failed"));
+          }
+        });
+      });
     } catch (err) {
       console.error("Error:", err);
-
-      // Mark as failed in the video card
       toast.error(err.message);
       onUploadError(err.message, videoId);
     } finally {

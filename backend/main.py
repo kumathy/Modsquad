@@ -4,8 +4,11 @@ multiprocessing.freeze_support()
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
+from sse_starlette.sse import EventSourceResponse
 import shutil
 import subprocess
+import json
+import uuid
 from pathlib import Path
 import logging
 import os
@@ -53,26 +56,27 @@ async def root():
 
 app.include_router(settings_router, prefix="/settings")
 
+_jobs = {}
+
 @app.post("/process-video")
 async def process_vod(file: UploadFile = File(...)):
     file_extension = Path(file.filename).suffix.lower()
 
     if file_extension not in ALLOWED_EXTENSIONS:
-        raise HTTPException (
+        raise HTTPException(
             status_code=400,
             detail=f"File type {file_extension} not allowed. Allowed: {ALLOWED_EXTENSIONS}"
         )
-    
+
+    job_id = str(uuid.uuid4())
     file_path = UPLOAD_DIR / file.filename
 
     try:
-        # Save uploaded file
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         file_size_mb = round(file_path.stat().st_size / (1024 * 1024), 2)
         logger.info(f"[Upload] {file.filename} ({file_size_mb} MB)")
 
-        # Check for audio stream
         probe = subprocess.run(
             ["ffprobe", "-v", "error", "-select_streams", "a",
              "-show_entries", "stream=index", "-of", "csv=p=0", str(file_path)],
@@ -81,52 +85,78 @@ async def process_vod(file: UploadFile = File(...)):
         if not probe.stdout.strip():
             raise HTTPException(status_code=400, detail="This file has no audio track to transcribe.")
 
-        # Transcribe
-        logger.info("[Transcribe] Starting...")
-        result = transcribe_audio(str(file_path))
-        logger.info(f"[Transcribe] Done - {len(result['segments'])} segments")
-
-        # Filter words and censor video
-        filtered_words = load_words()
-        matches, timestamps = updated_find_word_matches(result['timestamp'], filtered_words)
-        logger.info(f"[Filter] {len(matches)} words matched from {len(filtered_words)} filter words")
-
-        output_path = file_path.with_suffix(".censored.mp4")
-        buffer_seconds = get_audio_buffer_seconds()
-        logger.info("[Censor] Generating censored video...")
-        bleep_video(
-            str(file_path),
-            str(output_path),
-            timestamps,
-            use_bleep=True,
-            buffer=buffer_seconds,
-        )
-        logger.info(f"[Censor] Done - saved to {output_path.name}")
-
-        # Return results
-        return JSONResponse({
-            "success": True,
-            "filename": file.filename,
-            "file_size_mb": file_size_mb,
-            "transcript": {
-                "text": result["text"],
-                "language": result["language"],
-                "segment_count": len(result["segments"])
-            },
-            "profanity": {
-                "total_flagged": len(matches),
-                "words_replaced": len(timestamps),
-                "matched_words": [word for word, start, end in matches],
-            },
-            "download_url": f"/download/{output_path.name}",
-        })
-
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Processing failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
-
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     finally:
         file.file.close()
+
+    _jobs[job_id] = {"filename": file.filename, "file_path": str(file_path), "file_size_mb": file_size_mb}
+    return JSONResponse({"job_id": job_id, "filename": file.filename})
+
+
+@app.get("/process-video/{job_id}/progress")
+async def process_progress(job_id: str):
+    if job_id not in _jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = _jobs.pop(job_id)
+    file_path = Path(job["file_path"])
+    filename = job["filename"]
+    file_size_mb = job["file_size_mb"]
+
+    async def event_stream():
+        try:
+            yield {"event": "progress", "data": json.dumps({"stage": "transcribing", "progress": 20})}
+
+            logger.info("[Transcribe] Starting...")
+            result = transcribe_audio(str(file_path))
+            logger.info(f"[Transcribe] Done - {len(result['segments'])} segments")
+
+            yield {"event": "progress", "data": json.dumps({"stage": "filtering", "progress": 60})}
+
+            filtered_words = load_words()
+            matches, timestamps = updated_find_word_matches(result['timestamp'], filtered_words)
+            logger.info(f"[Filter] {len(matches)} words matched from {len(filtered_words)} filter words")
+
+            yield {"event": "progress", "data": json.dumps({"stage": "censoring", "progress": 75})}
+
+            output_path = file_path.with_suffix(".censored.mp4")
+            buffer_seconds = get_audio_buffer_seconds()
+            logger.info("[Censor] Generating censored video...")
+            bleep_video(
+                str(file_path),
+                str(output_path),
+                timestamps,
+                use_bleep=True,
+                buffer=buffer_seconds,
+            )
+            logger.info(f"[Censor] Done - saved to {output_path.name}")
+
+            yield {"event": "complete", "data": json.dumps({
+                "success": True,
+                "filename": filename,
+                "file_size_mb": file_size_mb,
+                "transcript": {
+                    "text": result["text"],
+                    "language": result["language"],
+                    "segment_count": len(result["segments"])
+                },
+                "profanity": {
+                    "total_flagged": len(matches),
+                    "words_replaced": len(timestamps),
+                    "matched_words": [word for word, start, end in matches],
+                },
+                "download_url": f"/download/{output_path.name}",
+            })}
+
+        except Exception as e:
+            logger.error(f"Processing failed: {e}")
+            yield {"event": "error", "data": json.dumps({"detail": str(e)})}
+
+    return EventSourceResponse(event_stream())
 
 @app.get("/download/{filename}")
 async def download_file(filename: str):

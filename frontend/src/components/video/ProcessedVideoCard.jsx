@@ -37,7 +37,7 @@ export default function ProcessedVideoCard({ video }) {
               <div className="space-y-2">
                 <Progress value={video.progress} />
                 <p className="flex justify-between items-center text-sm text-muted-foreground">
-                  <span>Processing video and applying language control...</span>
+                  <span>{video.stage || "Processing..."}</span>
                   <span className="font-medium">{video.progress}%</span>
                 </p>
               </div>
