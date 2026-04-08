@@ -52,7 +52,7 @@ export default function App() {
           </TabsList>
 
           <div className="mt-8">
-            <TabsContent value="vod" className="space-y-6">
+            <TabsContent value="vod" forceMount className="data-[state=inactive]:hidden space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Video Processing
@@ -68,7 +68,7 @@ export default function App() {
               />
             </TabsContent>
 
-            <TabsContent value="real-time" className="space-y-6">
+            <TabsContent value="real-time" forceMount className="data-[state=inactive]:hidden space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Real-time Stream Monitoring
@@ -81,7 +81,7 @@ export default function App() {
               <StreamProcessor />
             </TabsContent>
 
-            <TabsContent value="settings" className="space-y-6">
+            <TabsContent value="settings" forceMount className="data-[state=inactive]:hidden space-y-6">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Settings
