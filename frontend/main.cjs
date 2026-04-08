@@ -123,6 +123,9 @@ app.on("second-instance", () => {
 
 app.whenReady().then(async () => {
   if (!isDev) {
+    const uploadsDir = path.join(app.getPath("userData"), "uploads");
+    fs.rmSync(uploadsDir, { recursive: true, force: true });
+
     backendProcess = startBackend();
     try {
       await waitForBackend();
