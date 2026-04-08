@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import VideoProcessor from "@/components/video/VideoProcessor";
 import StreamProcessor from "@/components/stream/StreamProcessor";
 import Settings from "@/components/settings/Settings";
+import { Toaster } from "@/components/ui/sonner";
 
 import { Film, Radio, Settings2 } from "lucide-react";
 
@@ -96,6 +97,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <Toaster />
     </div>
   );
 }

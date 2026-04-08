@@ -5,6 +5,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 import shutil
+import subprocess
 from pathlib import Path
 import logging
 import os
@@ -70,6 +71,15 @@ async def process_vod(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
         file_size_mb = round(file_path.stat().st_size / (1024 * 1024), 2)
         logger.info(f"[Upload] {file.filename} ({file_size_mb} MB)")
+
+        # Check for audio stream
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "a",
+             "-show_entries", "stream=index", "-of", "csv=p=0", str(file_path)],
+            capture_output=True, text=True,
+        )
+        if not probe.stdout.strip():
+            raise HTTPException(status_code=400, detail="This file has no audio track to transcribe.")
 
         # Transcribe
         logger.info("[Transcribe] Starting...")

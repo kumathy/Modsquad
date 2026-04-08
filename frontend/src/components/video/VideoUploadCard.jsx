@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { API_URL } from "@/config";
 
 export default function VideoUploadCard({
@@ -74,6 +75,7 @@ export default function VideoUploadCard({
       console.error("Error:", err);
 
       // Mark as failed in the video card
+      toast.error(err.message);
       onUploadError(err.message, videoId);
     } finally {
       setLoading(false);
