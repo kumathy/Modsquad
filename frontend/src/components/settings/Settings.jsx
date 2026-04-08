@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus, Trash2, RotateCcw } from "lucide-react";
+import { Plus, Trash2, RotateCcw, X, Search } from "lucide-react";
 import { API_URL } from "@/config";
 
 export default function Settings() {
@@ -275,23 +275,33 @@ export default function Settings() {
                 className="rounded-md border bg-card"
                 open
               >
-                <summary className="cursor-pointer list-none px-4 py-3">
+                <summary className="cursor-pointer list-none rounded-md px-4 py-3 transition-colors hover:bg-accent">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <p className="font-medium">{filterSet.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {setWords.length} words
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={!!filterSet.enabled}
+                        onCheckedChange={(checked) => {
+                          handleToggleSet(filterSet.id, checked);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{filterSet.name}</p>
+                          {filterSet.isDefault && <Badge variant="outline">Default</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {setWords.length} words
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {filterSet.isDefault ? (
-                        <>
-                          <Badge variant="outline">Default</Badge>
-                          <Button
+                        <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="gap-1.5"
+                            className="gap-1.5 w-20 hover:bg-amber-100 hover:text-amber-700 hover:border-amber-300"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -301,13 +311,12 @@ export default function Settings() {
                             <RotateCcw className="w-4 h-4" />
                             Reset
                           </Button>
-                        </>
                       ) : (
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="gap-1.5"
+                          className="gap-1.5 w-20 hover:bg-red-100 hover:text-red-700 hover:border-red-300"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -318,31 +327,11 @@ export default function Settings() {
                           Delete
                         </Button>
                       )}
-                      <label className="flex items-center gap-2 text-sm">
-                        <span>Enabled</span>
-                        <Switch
-                          checked={!!filterSet.enabled}
-                          onCheckedChange={(checked) =>
-                            handleToggleSet(filterSet.id, checked)
-                          }
-                        />
-                      </label>
                     </div>
                   </div>
                 </summary>
 
                 <div className="space-y-3 border-t px-4 py-3">
-                  <Input
-                    value={searchTermsBySet[filterSet.id] || ""}
-                    onChange={(e) =>
-                      setSearchTermsBySet((prev) => ({
-                        ...prev,
-                        [filterSet.id]: e.target.value,
-                      }))
-                    }
-                    placeholder="Search words in this set..."
-                  />
-
                   <div className="flex gap-2">
                     <Input
                       value={newWordsBySet[filterSet.id] || ""}
@@ -355,7 +344,7 @@ export default function Settings() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleAddWord(filterSet.id);
                       }}
-                      placeholder="Add word to this set"
+                      placeholder="Add a word to this set..."
                     />
                     <Button
                       onClick={() => handleAddWord(filterSet.id)}
@@ -366,21 +355,36 @@ export default function Settings() {
                     </Button>
                   </div>
 
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      className="pl-8"
+                      value={searchTermsBySet[filterSet.id] || ""}
+                      onChange={(e) =>
+                        setSearchTermsBySet((prev) => ({
+                          ...prev,
+                          [filterSet.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Search words..."
+                    />
+                  </div>
+
                   <div className="flex flex-wrap gap-2">
                     {visibleWords.map((word, index) => (
                       <Badge
                         key={`${filterSet.id}-${word}-${index}`}
                         variant="secondary"
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 rounded-full border border-zinc-300"
                       >
                         {censorWord(word)}
                         <button
                           type="button"
                           onClick={() => handleRemoveWord(filterSet.id, word)}
-                          className="ml-1 text-xs hover:text-red-500"
+                          className="ml-1 rounded-full p-0.5 text-xs hover:bg-red-100 hover:text-red-500"
                           aria-label={`Remove ${word}`}
                         >
-                          x
+                          <X className="w-3 h-3" />
                         </button>
                       </Badge>
                     ))}
