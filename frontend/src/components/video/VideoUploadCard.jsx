@@ -71,7 +71,8 @@ export default function VideoUploadCard({
 
       // Reset form
       setFile(null);
-      document.getElementById("video-upload").value = "";
+      const input = document.getElementById("video-upload");
+      if (input) input.value = "";
     } catch (err) {
       console.error("Error:", err);
 

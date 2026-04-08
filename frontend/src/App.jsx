@@ -104,7 +104,7 @@ export default function App() {
           </div>
         </div>
       </footer>
-      <Toaster />
+      <Toaster position="top-center" />
     </div>
   );
 }
