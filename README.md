@@ -1,7 +1,7 @@
 # <p align="center">ModSquad</p>
 
 <p align="center">
-    VOD + Real-time language control tool for streaming
+    Automated Moderation Tool for Content Creation and Streaming
 </p>
 
 ## Table of Contents
