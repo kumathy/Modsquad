@@ -106,8 +106,7 @@ export default function VideoUploadCard({
         <CardHeader>
           <CardTitle>Upload Video</CardTitle>
           <CardDescription>
-            Upload your video and get a censored version with AI-powered voice
-            replacement
+            Upload your video to get an automatically censored version
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

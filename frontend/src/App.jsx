@@ -9,8 +9,11 @@ import VideoProcessor from "@/components/video/VideoProcessor";
 import StreamProcessor from "@/components/stream/StreamProcessor";
 import Settings from "@/components/settings/Settings";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { Film, Radio, Settings2 } from "lucide-react";
+
+import Logo from "@/components/Logo";
 
 export default function App() {
   const [processedVideos, setProcessedVideos] = useState([]);
@@ -22,15 +25,19 @@ export default function App() {
   }
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="scroll-m-20 text-3xl font-bold tracking-tight text-balance">
-            Modsquad
-          </h1>
-          <p className="leading-7 text-muted-foreground">
-            Stream Moderation with AI-Powered Voice Cloning
-          </p>
+        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
+          <Logo className="h-20 w-20 shrink-0 text-foreground" />
+          <div>
+            <h1 className="scroll-m-20 text-3xl font-bold tracking-tight text-balance">
+              ModSquad
+            </h1>
+            <p className="leading-7 text-muted-foreground">
+              Automated moderation tool for content creation and streaming
+            </p>
+          </div>
         </div>
       </header>
 
@@ -52,14 +59,18 @@ export default function App() {
           </TabsList>
 
           <div className="mt-8">
-            <TabsContent value="vod" forceMount className="data-[state=inactive]:hidden space-y-6">
+            <TabsContent
+              value="vod"
+              forceMount
+              className="data-[state=inactive]:hidden space-y-6"
+            >
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Video Processing
                 </h2>
                 <p className="text-muted-foreground">
-                  Upload your videos/recorded streams to receive a censored
-                  version with AI-cloned voice replacement.
+                  Upload your videos or recorded streams to receive an
+                  automatically censored version.
                 </p>
               </div>
               <VideoProcessor
@@ -68,7 +79,11 @@ export default function App() {
               />
             </TabsContent>
 
-            <TabsContent value="real-time" forceMount className="data-[state=inactive]:hidden space-y-6">
+            <TabsContent
+              value="real-time"
+              forceMount
+              className="data-[state=inactive]:hidden space-y-6"
+            >
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Real-time Stream Monitoring
@@ -81,7 +96,11 @@ export default function App() {
               <StreamProcessor />
             </TabsContent>
 
-            <TabsContent value="settings" forceMount className="data-[state=inactive]:hidden space-y-6">
+            <TabsContent
+              value="settings"
+              forceMount
+              className="data-[state=inactive]:hidden space-y-6"
+            >
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight mb-2">
                   Settings
@@ -100,11 +119,12 @@ export default function App() {
       <footer className="border-t mt-auto">
         <div className="container mx-auto px-4 py-6">
           <div className="text-sm text-muted-foreground">
-            <p>© 2026 Modsquad. AI-powered stream moderation.</p>
+            <p>© 2026 Modsquad. Automated moderation for content creation and streaming.</p>
           </div>
         </div>
       </footer>
       <Toaster position="top-center" />
     </div>
+    </TooltipProvider>
   );
 }

@@ -24,6 +24,10 @@ def _ensure_data_dir() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
 
 
+VALID_CENSOR_MODES = ("bleep", "mute")
+DEFAULT_CENSOR_MODE = "bleep"
+
+
 def _normalize_buffer_seconds(value: float | int | str | None) -> float:
     try:
         parsed = float(value)
@@ -38,35 +42,56 @@ def _normalize_buffer_seconds(value: float | int | str | None) -> float:
     return round(parsed, 3)
 
 
+def _normalize_censor_mode(value: str | None) -> str:
+    if isinstance(value, str) and value in VALID_CENSOR_MODES:
+        return value
+    return DEFAULT_CENSOR_MODE
+
+
 def load_audio_processing_settings() -> dict:
     _ensure_data_dir()
 
+    defaults = {"buffer_seconds": 0.0, "censor_mode": DEFAULT_CENSOR_MODE}
+
     if not os.path.exists(AUDIO_SETTINGS_FILE):
-        return {"buffer_seconds": 0.0}
+        return defaults
 
     try:
         with open(AUDIO_SETTINGS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
         if not isinstance(data, dict):
-            return {"buffer_seconds": 0.0}
+            return defaults
         return {
-            "buffer_seconds": _normalize_buffer_seconds(data.get("buffer_seconds", 0.0))
+            "buffer_seconds": _normalize_buffer_seconds(data.get("buffer_seconds", 0.0)),
+            "censor_mode": _normalize_censor_mode(data.get("censor_mode")),
         }
     except Exception:
-        return {"buffer_seconds": 0.0}
+        return defaults
 
 
-def save_audio_processing_settings(buffer_seconds: float) -> dict:
+def save_audio_processing_settings(
+    buffer_seconds: float | None = None,
+    censor_mode: str | None = None,
+) -> dict:
     _ensure_data_dir()
-    normalized = {"buffer_seconds": _normalize_buffer_seconds(buffer_seconds)}
+    current = load_audio_processing_settings()
+
+    if buffer_seconds is not None:
+        current["buffer_seconds"] = _normalize_buffer_seconds(buffer_seconds)
+    if censor_mode is not None:
+        current["censor_mode"] = _normalize_censor_mode(censor_mode)
+
     with open(AUDIO_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(normalized, f, ensure_ascii=False, indent=2)
-    return normalized
+        json.dump(current, f, ensure_ascii=False, indent=2)
+    return current
 
 
 def get_audio_buffer_seconds() -> float:
-    settings = load_audio_processing_settings()
-    return settings["buffer_seconds"]
+    return load_audio_processing_settings()["buffer_seconds"]
+
+
+def get_censor_mode() -> str:
+    return load_audio_processing_settings()["censor_mode"]
 
 class WordRequest(BaseModel):
     word: str
@@ -80,7 +105,8 @@ class ToggleRequest(BaseModel):
 
 
 class AudioProcessingSettingsRequest(BaseModel):
-    buffer_seconds: float
+    buffer_seconds: float | None = None
+    censor_mode: str | None = None
 
 
 def _find_filter_set(filter_sets: list[dict], set_id: str) -> dict:
@@ -187,12 +213,20 @@ def get_audio_processing_settings_endpoint():
 
 @router.post("/audio-processing")
 def update_audio_processing_settings_endpoint(data: AudioProcessingSettingsRequest):
-    if data.buffer_seconds < 0:
+    if data.buffer_seconds is not None and data.buffer_seconds < 0:
         raise HTTPException(status_code=400, detail="buffer_seconds must be >= 0")
+    if data.censor_mode is not None and data.censor_mode not in VALID_CENSOR_MODES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"censor_mode must be one of {VALID_CENSOR_MODES}",
+        )
 
     return {
         "success": True,
-        **save_audio_processing_settings(data.buffer_seconds),
+        **save_audio_processing_settings(
+            buffer_seconds=data.buffer_seconds,
+            censor_mode=data.censor_mode,
+        ),
     }
 
 
