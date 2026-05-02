@@ -1,6 +1,12 @@
+"""
+Please use "git clone https://github.com/ggml-org/whisper.cpp.git" to clone the repo to run this
+Then use cmake -B build -DWHISPER_SDL2=ON  to build the whisper-stream.exe
+         cmake --build build -j --config Release
+Make sure to also have SDL2 installed
+"""
 import subprocess
 
-WHISPER_EXE = "backend/utils/whisper.cpp/build/bin/whisper-stream"
+WHISPER_EXE = "backend/utils/whisper.cpp/build/bin/whisper-stream" # Replace these with what they look like in your system 
 MODEL_PATH = "backend/utils/whisper.cpp/models/ggml-base.en.bin"
 
 command = [
