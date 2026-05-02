@@ -37,3 +37,4 @@ backend/data/
 *.sln
 *.sw?
 backend/utils/whisper.cpp/
+backend/utils/whisper.cpp/
