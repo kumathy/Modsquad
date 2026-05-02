@@ -36,3 +36,4 @@ backend/data/
 *.njsproj
 *.sln
 *.sw?
+backend/utils/whisper.cpp/
